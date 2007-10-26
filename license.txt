@@ -1,0 +1,3 @@
+See license.txt in base install directory. 
+This file must be left here though. 
+It's used to help with Setup.java finding the current runtime directory.

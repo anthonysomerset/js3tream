@@ -1,0 +1,164 @@
+<!-- =======================================
+ This is the js3tream ANT build file.  
+ The following list defines the set of common build targets.
+ 
+ all = Build everything up to the JAR file, and put it into the RTE dir.
+ compile = Compile sources ONLY
+ jar = Build the JAR file
+ rte = Build the RTE. This is the same as "all"
+ javadoc = Build the javadoc files
+ clean = clean up all build files
+
+============================================ -->
+
+<project default="all" name="JS3tream">
+	
+	<!-- Init -->
+	<target name="init">
+		<property name="projectName" value="JDash"/>
+		<property name="sourceDir" value="src" />
+		<property name="outputDir" value="build" />
+		<property name="libDir" value="lib" />
+		<property name="docDir" value="doc" />
+		<property name="lib-1" value="jargs.jar"/>
+		<property name="lib-2" value="wsdl4j-1.5.1.jar"/>
+		<property name="lib-3" value="activation.jar"/>
+		<property name="lib-4" value="commons-codec-1.3.jar"/>
+		<property name="lib-5" value="commons-logging-1.1.jar"/>
+		<property name="lib-6" value="axis.jar"/>
+		<property name="lib-7" value="commons-discovery-0.2.jar"/>
+		<property name="lib-8" value="jaxrpc.jar"/>
+		<property name="lib-9" value="saaj.jar"/>
+		<property name="lib-10" value="xmlParserAPIs.jar"/>
+		<property name="lib-11" value="junit.jar"/>
+		<property name="lib-12" value="mail.jar"/>
+		<property name="lib-13" value="xercesImpl.jar"/>
+		<property name="libs" value="${libDir}/${lib-1}:${libDir}/${lib-2}:${libDir}/${lib-3}:${libDir}/${lib-4}:${libDir}/${lib-5}:${libDir}/${lib-6}:${libDir}/${lib-7}:${libDir}/${lib-8}:${libDir}/${lib-9}:${libDir}/${lib-10}:${libDir}/${lib-11}:${libDir}/${lib-12}:${libDir}/${lib-13}" />
+
+		<mkdir dir="${outputDir}" />
+	</target>
+	
+	<!-- ALL -->
+	<target name="all" depends="init,jar">
+		<echo message="Build complete"/>
+	</target>
+	
+	<!-- Compile -->
+	<target name="compile" depends="init">
+		<echo message="Compiling ..."/>
+		<javac 
+			srcdir="${sourceDir}" 
+			destdir="${outputDir}" 
+			classpath="${libs}" 
+			deprecation="true" 
+			debug="true" 
+			debuglevel="source,lines,vars"
+		/>
+	</target>
+	
+	<!-- Jar -->
+	<target name="jar" depends="init,compile">
+		<echo message="Creating jar file ..."/>
+		
+		<delete file="manifest.txt" />
+	
+		<manifest file="manifest.txt">
+			<attribute name="Created-By" value="Shane Powell (Copyright 2006)"/>
+			<attribute name="Main-Class" value="net.sourceforge.js3tream.Command"/>
+			<attribute name="Class-Path" value="${lib-1} ${lib-2} ${lib-3} ${lib-4} ${lib-5} ${lib-6} ${lib-7} ${lib-8} ${lib-9} ${lib-10} ${lib-11} ${lib-12} ${lib-13}"/>
+		</manifest>
+		
+		<echo message="Creating jar file..."/>
+				
+		<jar destfile="${libDir}/js3tream.jar"
+		     basedir="build"
+		     includes="**/*"
+		     manifest="manifest.txt"
+         	/>
+		
+		<delete file="manifest.txt" />
+	</target>
+	
+	<!-- java doc -->
+	<target name="javadoc" depends="init">
+		<javadoc packagenames="*"
+			sourcepath="${sourceDir}"
+			destdir="${docDir}/javadoc"
+			classpath="${classpath}"
+			author="true"
+			version="true"
+			windowtitle="${projectName} API"
+			doctitle="${projectName}"
+			header="${projectName} JavaDoc"
+			overview="Overview"
+			bottom="Copyright (c) 2006 Shane Powell under the LGPL License. All Rights Reserved."
+    	/>
+	</target>
+	
+	
+	<!-- release -->
+	<target name="release" depends="jar">
+		
+		<echo>If you get an error like "FJBuildTask cannot be found", then you didn't include the fatjar.jar in the ant lib</echo>
+		<echo>try "ant -lib lib/fatjar.jar release"</echo>
+
+		<property name="fjepPath" value="${libDir}/fatjar.jar"/>
+		<taskdef name="fatjar.build" classname="net.sf.fjep.anttask.FJBuildTask" classpath="${fjepPath}"/>
+		<typedef name="fatjar.manifest" classname="net.sf.fjep.anttask.FJManifestType" classpath="${fjepPath}"/>
+		<typedef name="fatjar.exclude" classname="net.sf.fjep.anttask.FJExcludeType" classpath="${fjepPath}"/>
+		<typedef name="fatjar.jarsource" classname="net.sf.fjep.anttask.FJJarSourceType" classpath="${fjepPath}"/>
+		<typedef name="fatjar.filesource" classname="net.sf.fjep.anttask.FJFileSourceType" classpath="${fjepPath}"/>
+
+		<fatjar.build onejar="true" output="js3tream.jar">
+			<fatjar.manifest mainclass="net.sourceforge.js3tream.Command"/>
+			<fatjar.jarsource file="${libDir}/js3tream.jar" relpath=""/>
+			<fatjar.jarsource file="${libDir}/activation.jar" relpath=""/>
+			<fatjar.jarsource file="${libDir}/axis.jar" relpath=""/>
+			<fatjar.jarsource file="${libDir}/commons-codec-1.3.jar" relpath=""/>
+			<fatjar.jarsource file="${libDir}/commons-discovery-0.2.jar" relpath=""/>
+			<fatjar.jarsource file="${libDir}/commons-logging-1.1.jar" relpath=""/>
+			<fatjar.jarsource file="${libDir}/jaxrpc.jar" relpath=""/>
+			<fatjar.jarsource file="${libDir}/junit.jar" relpath=""/>
+			<fatjar.jarsource file="${libDir}/mail.jar" relpath=""/>
+			<fatjar.jarsource file="${libDir}/saaj.jar" relpath=""/>
+			<fatjar.jarsource file="${libDir}/wsdl4j-1.5.1.jar" relpath=""/>
+			<fatjar.jarsource file="${libDir}/xercesImpl.jar" relpath=""/>
+			<fatjar.jarsource file="${libDir}/xmlParserAPIs.jar" relpath=""/>
+			<fatjar.jarsource file="${libDir}/jargs.jar" relpath=""/>
+		</fatjar.build>
+		
+		<zip destfile="js3tream-x.x.zip">
+			<fileset dir="./">
+				<include name="js3tream.jar"/>
+				<include name="README.txt"/>
+				<include name="license.txt"/>
+			</fileset>
+		</zip>
+
+	</target>
+	
+	<!-- clean -->
+	<target name="clean" depends="init">
+		<echo message="Cleaning..." />
+		<delete failonerror="no" dir="${outputDir}" />
+		<delete failonerror="no" file="${libDir}/js3tream.jar" />
+		<delete failonerror="no" file="js3tream.jar" />
+		<delete>
+			<fileset dir="." includes="js3tream*.zip"/>
+		</delete>
+	</target>
+	
+	<!-- Generate the S3 java files from the WSDL -->
+	<target name="wsdl2java" depends="init">
+		<echo message="Generating Amazon s3 java files..."/>
+		<java classname="org.apache.axis.wsdl.WSDL2Java" classpath="${libs}">
+			<arg line=" -a -o ${sourceDir} " />
+			<arg line=" http://s3.amazonaws.com/doc/2006-03-01/AmazonS3.wsdl?"/>
+		</java>
+		      
+	</target>
+	
+	
+
+	
+</project>
