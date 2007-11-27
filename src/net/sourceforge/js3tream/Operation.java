@@ -51,13 +51,13 @@ public abstract class Operation
 	public static final int DEFAULT_BUCKET_OBJECT_BYTES = 5000000; 
 	
 	/** The maximum number of S3 activity attempts before we consider the operation a failure */
-	public static final int MAX_S3_READWRITE_ATTEMPTS = 5;
+	public static final int MAX_S3_READWRITE_ATTEMPTS = 2;
 	
 	/** After a failure, go to sleep for this time until the next try. */
 	public static final int FAIL_SLEEP_TIME = 250;
 	
 	/** After a set of 5 failures, the process will wait this many minutes befor trying again */
-	public static final int NEVER_DIE_SLEEP_TIME = 30;
+	public static final int NEVER_DIE_SLEEP_TIME = 10;
 
 	/** Each bucket can have a tag field associated with it */
 	public static final String META_DATA_TAG = "tag";

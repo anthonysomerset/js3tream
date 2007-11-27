@@ -44,8 +44,8 @@ public class Command
 {
 	
 	private static final int MAJOR_VERSION = 0;
-	private static final int MINOR_VERSION = 4;
-	private static final String DATE_VERSION = "October 26, 2007";
+	private static final int MINOR_VERSION = 5;
+	private static final String DATE_VERSION = "November 26, 2007";
 	private static final String LICENSE = "Protected under the LGPL";
 	private static final String COPYRIGHT = "Copyright (c) Shane Powell 2006";
 	private static final String WEBSITE = "http://js3tream.sourceforge.net";

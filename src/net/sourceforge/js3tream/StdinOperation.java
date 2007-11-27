@@ -187,10 +187,12 @@ public class StdinOperation extends Operation
 		long byteCount = 0;
 		int b = 0;
 		OutputStream bufferOutputStream = null;
-		while ((b = this.is_.read()) != -1)
+		do
 		{
+			/* Read the byte */
+			b = this.is_.read();
 
-			/* Create a new buffer */
+			/* Create a new buffer, if it doesn't yet exist */
 			if (bufferOutputStream == null)
 			{
 				bufferOutputStream = createBufferOutputStream();
@@ -207,40 +209,89 @@ public class StdinOperation extends Operation
 				
 			}
 
-			/* Add the byte to the buffer */
-			bufferOutputStream.write(b);
-			byteCount++;
 			
-			/* Calculate the MD5 on the way through */
-			messageDigest.update((byte)b);
-			
-			
-			/* If this was the end of the buffer, then send the buffer to S3,
-			 * and reset the buffer */
-			if (byteCount >= this.bufferSize_)
+			/* If b is valid, then add it to the buffer.  If not, well... duh.. don't add it */
+			if (b != -1)
 			{
-				/* Flush and close the file stream */
+				/* Add the byte to the buffer */
+				bufferOutputStream.write(b);
+				byteCount++;
+			
+				/* Calculate the MD5 on the way through */
+				messageDigest.update((byte)b);
+			}
+			
+			
+			
+			/* If this was the end of the buffer, or no more bytes, then send the buffer to S3,
+			 * and reset the buffer */
+			if ((byteCount >= this.bufferSize_) || (b == -1))
+			{
+				/* Flush and close the file/buffer stream */
 				bufferOutputStream.flush();
 				bufferOutputStream.close();
-
-				/* Send the bytes off */
-				sendS3Object(createBufferInputStream(), byteCount, Common.toHex(messageDigest.digest()));
-
+				
+				String md5Sum = Common.toHex(messageDigest.digest());
+				
+				/* Send the bytes off. Note, if the neverdie option is set, then we'll loop on this send FOREVER */
+				if (this.neverDie_)
+				{
+					int attemptCount = 0;
+					boolean retry = true;
+					
+					while (retry)
+					{
+						/* Since inside the neverdie, we will retry FOREVER, or until successfull */
+						try
+						{
+							attemptCount++;
+							sendS3Object(this.objectCount_, createBufferInputStream(), byteCount, md5Sum);
+							retry = false; /* the ONLY way to escape the loop */
+						}
+						catch(Exception e)
+						{
+							
+							Log.debug("S3 Put Failure\n", e);
+							
+							/* We'll retry twice, before sleeping for 10 minutes */
+							if(attemptCount < MAX_S3_READWRITE_ATTEMPTS)
+							{
+								Log.warn("Attempt [" + attemptCount + " of " + MAX_S3_READWRITE_ATTEMPTS + "] failed sending S3 container\n");
+								Thread.sleep(1000 * 2);
+								
+							}
+							else
+							{
+								/* Wait for a time, then try again */
+								Log.error(attemptCount + " attempts were made to send S3 container to S3.\nNone of which were successfull.\n" +
+											"Send Failure. we'll try again in " + NEVER_DIE_SLEEP_TIME + " minutes\n"); 
+								Thread.sleep(NEVER_DIE_SLEEP_TIME * 60 * 1000);
+								retry = true;
+								attemptCount = 0;
+							} /* end else */
+							
+						} /* end try/catch */
+						
+					} /* end while (retry) */
+					
+				} /* end if (neverdie) */
+				else
+				{
+					sendS3Object(this.objectCount_, createBufferInputStream(), byteCount, md5Sum);
+				}
+				
+				/* Increment the count of uploaded objects */
+				this.objectCount_++;
+				
 				/* reset the buffer */
 				bufferOutputStream = null;
 				byteCount = 0;
 
 			}
 
-		} /* end while */
+		} /* end while reading input stream */
+		while (b != -1);
 
-		/* Since we're now outside the loop, there must be no more data. But..
-		 * the current buffer might have some data left to be pushed. So, we'll do
-		 * one last put */
-		bufferOutputStream.flush();
-		bufferOutputStream.close();
-		sendS3Object(createBufferInputStream(), byteCount, Common.toHex(messageDigest.digest()));
-		bufferOutputStream = null;
 
 		
 		if (this.kBytesProcessed_ > 10000)
@@ -316,13 +367,13 @@ public class StdinOperation extends Operation
 	 * @param data
 	 * @param key
 	 **************************************************************************/
-	public void sendS3Object(InputStream is, long length, String md5) throws Exception
+	public void sendS3Object(long objectIndex, InputStream is, long length, String md5) throws Exception
 	{
 		
 		this.kBytesProcessed_ += length / 1000;
 
 		/* Calculate the key */
-		String key = generateObjectKey(this.objectCount_++);
+		String key = generateObjectKey(objectIndex);
 		
 		if (length > 1000000)
 		{
@@ -352,74 +403,36 @@ public class StdinOperation extends Operation
 		}
 		
 		
-		/* Put the file, We'll try a few times */
-		int attemptCount = 0;
-		while (attemptCount < MAX_S3_READWRITE_ATTEMPTS)
-		{
-			attemptCount++;
-		
-			try
-			{
-				long startTime = System.currentTimeMillis();
-				
-				
-				AmazonS3_ServiceLocator locator = new AmazonS3_ServiceLocator();
-				AmazonS3SoapBindingStub binding = new AmazonS3SoapBindingStub(new URL(locator.getAmazonS3Address()), locator);
-				DataHandler dataHandler = new DataHandler(new SourceDataSource(null, MIMETYPE_OCTET_STREAM, new StreamSource(is)));
-	            binding.addAttachment(dataHandler);
-				
-				PutObjectResult result = binding.putObject(getBucketName(), 
-															key, 
-															metaData , 
-															length, 
-															null, 
-															storageClass, 
-															access.getAccessKey(), 
-															access.getAccessCalendar(), 
-															access.generateSignature("PutObject"), 
-															null);
-				
-								
-				long endTime = System.currentTimeMillis();
-				
-				Log.info(String.format("%6.02f Kb/s\n", (((double)((double)length * (double)Byte.SIZE)) / 1000D) / ((endTime - startTime) / 1000)));
-	
-				/* compare md5 hashes */
-				if (md5.equals(result.getETag().replaceAll("\"", "")) == false)
-				{
-					throw new Exception("After putting the S3 object [" + key + "], we compared the md5 hash codes. They did not match\n" + "original: [" + md5 + "]\nS3: [" + result.getETag() + "]");
-				}
-				
-				/* If we got here, then all is good */
-				return;
-				
-			}
-			catch(Exception e)
-			{
-				Log.warn("Attempt [" + attemptCount + " of " + MAX_S3_READWRITE_ATTEMPTS + "] failed on: [" + key + "]\n");
-				Log.debug("S3 Put Failure\n", e);
-				
-				/* If we've exceeded our  max try count, then fail the whole process */
-				if (attemptCount >= MAX_S3_READWRITE_ATTEMPTS)
-				{
-					String warningMessage = attemptCount + " attempts were made to send object [" +  key + "] to S3.\nNone of which were successfull.";
-					
-					if (this.neverDie_)
-					{
-						attemptCount = 0;
-						Log.warn(warningMessage + "\n we'll try again in " + NEVER_DIE_SLEEP_TIME + " minutes");
-						Thread.sleep(NEVER_DIE_SLEEP_TIME * 60 * 1000);
-					}
-					else
-					{
-						throw new Exception(warningMessage + "\nHere is the last error", e);
-					}
-					
-				}
-				
-			}
+			long startTime = System.currentTimeMillis();
 			
-		}
+			
+			AmazonS3_ServiceLocator locator = new AmazonS3_ServiceLocator();
+			AmazonS3SoapBindingStub binding = new AmazonS3SoapBindingStub(new URL(locator.getAmazonS3Address()), locator);
+			DataHandler dataHandler = new DataHandler(new SourceDataSource(null, MIMETYPE_OCTET_STREAM, new StreamSource(is)));
+            binding.addAttachment(dataHandler);
+			
+			PutObjectResult result = binding.putObject(getBucketName(), 
+														key, 
+														metaData , 
+														length, 
+														null, 
+														storageClass, 
+														access.getAccessKey(), 
+														access.getAccessCalendar(), 
+														access.generateSignature("PutObject"), 
+														null);
+			
+							
+			long endTime = System.currentTimeMillis();
+			
+			Log.info(String.format("%6.02f Kb/s\n", (((double)((double)length * (double)Byte.SIZE)) / 1000D) / ((endTime - startTime) / 1000)));
+
+			/* compare md5 hashes */
+			if (md5.equals(result.getETag().replaceAll("\"", "")) == false)
+			{
+				throw new Exception("After putting the S3 object [" + key + "], we compared the md5 hash codes. They did not match\n" + "original: [" + md5 + "]\nS3: [" + result.getETag() + "]");
+			}
+				
 		
 	}
 	
