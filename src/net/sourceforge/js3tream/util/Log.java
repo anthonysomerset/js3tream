@@ -128,6 +128,18 @@ public class Log
 	/*******************************************************
 	 * @param message
 	 *******************************************************/
+	public static void error(String message, Exception e)
+	{
+		if (Log.error_)
+		{
+			printMessage(message);
+			e.printStackTrace();
+		}
+	}
+	
+	/*******************************************************
+	 * @param message
+	 *******************************************************/
 	public static void debug(String message)
 	{
 		if (Log.debug_)
@@ -143,8 +155,8 @@ public class Log
 	{
 		if (Log.debug_)
 		{
-			e.printStackTrace();
 			printMessage(message);
+			e.printStackTrace();
 		}
 	}
 	
