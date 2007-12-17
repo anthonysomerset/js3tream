@@ -44,10 +44,10 @@ public class Command
 {
 	
 	private static final int MAJOR_VERSION = 0;
-	private static final int MINOR_VERSION = 5;
-	private static final String DATE_VERSION = "November 26, 2007";
+	private static final int MINOR_VERSION = 6;
+	private static final String DATE_VERSION = "December 17, 2007";
 	private static final String LICENSE = "Protected under the LGPL";
-	private static final String COPYRIGHT = "Copyright (c) Shane Powell 2006";
+	private static final String COPYRIGHT = "Copyright (c) Shane Powell 2007";
 	private static final String WEBSITE = "http://js3tream.sourceforge.net";
 	
 	private static final String VERSION = "JS3tream v" + MAJOR_VERSION + "." + MINOR_VERSION + " - " + DATE_VERSION + "\n" + LICENSE + "\n" + COPYRIGHT + "\n" + WEBSITE;

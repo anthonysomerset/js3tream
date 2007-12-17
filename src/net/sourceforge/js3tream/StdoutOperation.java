@@ -201,7 +201,7 @@ public class StdoutOperation extends Operation
 	public void restoreS3Object(String key) throws Exception
 	{
 		
-		Log.info("Fetching S3 object [" + key + "] ");
+		Log.info("Fetching S3 object [" + key + "] \n");
 		
 		if (isPretendMode())
 		{
@@ -266,7 +266,14 @@ public class StdoutOperation extends Operation
 					byteCount++;
 					messageDigest.update((byte)b);
 					os.write(b);
+					
+					if (byteCount % 1000 == 0)
+					{
+						Log.info("\r" + byteCount + " bytes read...");
+					}
 				}
+				
+				Log.info("\r" + byteCount + " bytes read...");
 				
 				os.flush();
 				os.close();
@@ -296,6 +303,7 @@ public class StdoutOperation extends Operation
 				}
 				is.close();
 				is = null;
+				this.os_.flush();
 				
 				Log.debug(byteCount + " bytes sent to STDOUT\n");
 				return;
