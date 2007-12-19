@@ -1,0 +1,163 @@
+
+<html>
+
+  <head>
+    <title>Backup using tar and JS3tream in Linux</title>
+    <link rel="stylesheet" type="text/css" href="main.css" />
+  </head>
+
+  <body bgcolor="white">
+
+<table border="0">
+  <tr height="210"><td><a href="/"><img border="0" src="logo.gif"></a></td></tr>
+</table>
+
+
+<h1>Backup using tar and JS3tream in Linux</h1>
+<p>
+Thankfully for us, the GNU Tar utility provides an easy way to pipe data in and out.  I'm sure most of you remember the old way
+of using gunzip piped into tar to extract a .tgz file.  That being said, these examples here are using the now common gnu tar 
+utility that comes with most (if not all) Linux distributions.  Infact, I was using GNU Tar 1.16 when I tested these commands.
+</p>
+<br><hr>
+<h2>Common TAR switches</h2>
+<ul>
+ <li>-c will create a new tar archive.</li>
+ <li>-z will compress the archive using gzip.</li>
+ <li>-p will preserve the file permissions.</li>
+ <li>-O will stream the tar output through STDOUT.</li>
+ <li>-C tell tar to create or extract it's archive in this directory</li>
+ <li>-g tell tar to generate an incremental archive</li>
+</ul>
+
+<h2>Common JS3tream switches</h2>
+<ul>
+ <li>-K is the name of your S3 key file.</li>
+ <li>-b is the name of the S3 bucket to stream the data into</li>
+ <li>-i tells js3tream to read from STDIN, and send the data to S3</li>
+ <li>-t tells js3tream to tag the stream with a message</li>
+ <li>-d delete an S3 archive</li>
+ <li>-l list all of my S3 archives</li>
+</ul>
+
+
+
+<br><hr>
+<h2>Backup a Directory to S3</h2>
+<p>
+Using tar, create a ziped backup of "/etc" and pipe the tared data through JS3tream storing the data into bucket "mybucket" prefix "etc.tgz".  
+</p>
+<pre class="code">
+tar -C / -czpO /etc | java -jar js3tream.jar -K mykey.txt -b mybucket:etc.tgz -i -t "An archive of my /etc directory"
+</pre>
+</p>
+
+<br><hr>
+<h2>Restore an Archive from S3</h2>
+Using JS3tream pipe the archive through tar extracting it back to the filesystem.
+<pre class="code">>
+java -jar js3tream.jar -K mykey.txt -b mybucket:etc.tgz -o | tar -C / -xz
+</pre>
+
+<br><hr>
+<h2>Perform an Incremental Backup to S3</h2>
+<p>Using tar and it's incremental backup feature, we can keep an incremental backup of our data on S3.  Lets say for example, we want
+to do an incremental backup every week of our /etc directory.  First, we must create an inital archive.  Then create an incremental
+archive for the next 3 weeks.
+</p>
+
+<p>Here is the command to create the initial archive.  note the -g option for tar. This will create a tar differential file named etc.tgz.dif. Tar will
+use this file from now on to create differential archives.
+<pre class="code">
+tar -g etc.tgz.dif -C / -czpO /etc | java -jar -js3tream.jar -K mykey.txt -b mybucket:etc.0.tgz -i -t "The initial archive of /etc"
+</pre>
+</p>
+
+<p>
+I suggest you make a copy of the etc.tgz.dif file.  This way, we can start a new set of incremental archives without having to re-upload our initial archive.
+<pre class="code">cp etc.tgz.dif etc.tgz.dif.initial</pre>
+</p>
+
+<p>
+This command will now use our etc.Tgz.dif to create an incremental tar archive.  You'll note that the command is almost the exact same. The only difference
+is the name of the bucket.  
+</p>
+<pre class="code">
+tar -g etc.tgz.dif -C / -czpO /etc | java -jar -js3tream.jar -K mykey.txt -b mybucket:etc.1.tgz -i -t "An incremental archive of /etc"
+</pre>
+<p>
+You can now repeat this command each week, changing the bucket name.
+</p>
+
+<p>
+Perhaps you would like to simply keep a single incremental archive of your /etc directory.  This is where we can re-use the copy of the original
+tar differential file.  Create the initial archive as above, and keep a copy of the original etc.tgz.dif file.  Then, each time
+you want to create an incremental archive, delete the old one from S3, and create a new one.
+</p>
+<pre class="code">
+tar -g etc.tgz.dif -C / -czpO /etc | java -jar -js3tream.jar -K mykey.txt -b mybucket:etc.0.tgz -i -t "The initial archive of /etc"
+cp etc.tgz.dif etc.tgz.dif.initial
+</pre>
+<p>Then each week</p>
+<pre class="code">
+java -jar js3stream.jar -K mykey.txt -b mybucket:etc.1.tgz -d
+rm etc.tgz.dif
+cp etc.tgz.dif.initial etc.tgz.dif
+tar -g etc.tgz.dif -C / -czpO /etc | java -jar -js3tream.jar -K mykey.txt -b mybucket:etc.1.tgz -i -t "An incremental archive of /etc"
+</pre>
+
+<br><hr>
+<h2>Restore an Incremental Archive from S3</h2>
+<p>The procedure to restore an incremental archive from S3 is similar to a standard archive.  The only real difference is that we must restore the
+S3 archives in order.  And we must restore all of them. 
+</p>
+<p>First, lets get a list of all of our buckets from S3</p>
+<pre class="code">
+java -jar js3tream.jar -K mykey.txt -l
+2006-12-22 11:32:11 - mybucket
+2006-12-24 01:21:14 - mybucket2
+</pre>
+<p>Now, lets list the archives stored in the bucket we want to use</p>
+<pre class="code">
+java -jar js3tream -K mykey.txt -l -b mybucket
+2006-12-21 02:15:12 - mybucket:etc.0.tgz
+    TAG: The initial archive of /etc
+2006-12-21 04:16:57 - mybucket:etc.1.tgz
+   -> An incremental archivew of /etc
+2006-12-21 07:12:12 - mybucket:etc.2.tgz
+   -> An incremental archivew of /etc
+2006-12-21 07:25:21 - mybucket:etc.3.tgz
+   -> An incremental archivew of /etc
+</pre>
+<p>
+Now we know the names of our archives.  We will need to perform 4 restores to be uptodate.  Note the difference in the tar -g option.  This tells tar to perform a
+differential restore, but no dif file is provided on restore operations.
+<pre class="code">
+  java -jar js3tream.jar -K mykey.txt -o -b mybucket:etc.0.tgz | tar -g /dev/null -C / -xz
+  java -jar js3tream.jar -K mykey.txt -o -b mybucket:etc.1.tgz | tar -g /dev/null -C / -xz
+  java -jar js3tream.jar -K mykey.txt -o -b mybucket:etc.2.tgz | tar -g /dev/null -C / -xz
+  java -jar js3tream.jar -K mykey.txt -o -b mybucket:etc.3.tgz | tar -g /dev/null -C / -xz 
+</pre>
+</p>
+
+<hr>
+<p>
+<h2>Backup a remote file system using SSH, TAR and JS3tream</h2>
+<p>
+The following command will tar up the /etc directory on a remote machine, pull the TAR data back over using SSH, and then send the stream out to S3
+</p>
+<pre class="code">
+  ssh remote_machine tar -czpO /etc | java -jar js3tream.jar -K key.txt -i -b mys3bucket:etc.0.tgz -t "Initial archive of /etc" -v
+</pre>
+
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-2916410-1";
+urchinTracker();
+</script>
+
+  </body>
+
+</html>
+

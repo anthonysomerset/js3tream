@@ -1,0 +1,53 @@
+
+body
+{
+ background-color: white;
+ background-image: url(bground.jpg);
+ background-repeat: repeat-x;
+}
+
+h1
+{
+  padding-left: 10pt;
+  padding-right: 10pt;
+}
+
+h2
+{
+  padding-left: 25pt;
+  padding-right: 25pt;
+}
+
+h3
+{
+  padding-left: 35pt;
+  padding-right: 35pt;
+}
+
+p
+{
+  padding-left: 40pt;
+  padding-right: 40pt;
+}
+
+ul
+{
+  padding-left: 60pt;
+  padding-right: 60pt;
+}
+
+
+.indented
+{
+   padding-left: 50pt;
+   padding-right: 50pt;
+}
+
+.code
+{
+	padding: 1em;
+	border: 1px dashed #2f6fab;
+	color: black;
+	background-color: #f9f9f9;
+	line-height: 1.1em;
+}

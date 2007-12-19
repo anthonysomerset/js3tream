@@ -1,0 +1,278 @@
+
+<html>
+  <head>
+    <title>JS3tream FAQ</title>
+    <link rel="stylesheet" type="text/css" href="main.css" />
+  <head>
+
+  <body bgcolor="white">
+
+<table border="0">
+  <tr height="210"><td><a href="/"><img border="0" src="logo.gif"></a></td></tr>
+</table>
+
+
+<h1>JS3tream FAQ</h1>
+
+<ul>
+
+<li><a href="#1">What is a good naming structure fo rmy buckets?</a></li>
+<li><a href="#2">Why do I get an OutOfMemory error when I try to retore from S3?</a></li>
+<li><a href="#3">What impact does setting the "size (-z)" flag in JS3tream have?</a></li>
+<li><a href="#4">How does JS3tream verify the data was uploaded successfully?</a></li>
+<li><a href="#5">How many times will JS3tream try to send the same data chunk?</a></li>
+<li><a href="#6">How long will it take to upload/download my data?</a></li>
+<li><a href="#7">If JS3tream reads and writes from STDIO, then won't the -v option mess up my data?</a></li>
+<li><a href="#8">How can I encrypt my data on S3?</a></li>
+<li><a href="#9">What is the maximum size I can store per archive?</a></li>
+<li><a href="#10">How can I get my S3 archive and save it as a file?</a></li>
+<li><a href="#11">Why does JS3tream need to use a temp file?</a></li>
+<li><a href="#12">Why does it take so long to list the contents of my S3 bucket?</a></li>
+<li><a href="#13">How can I restore my archive without using JS3tream?</a></li>
+
+</ul>
+
+<hr>
+
+
+
+<a name="1">
+<h2>What is a good naming structure for my buckets?</h2>
+</a>
+<p>
+Because your bucket names on S3 must be unique to ALL S3 buckets, you must come up with something unique, but usefull.
+I have been using a naming structure that incorporates my domain and machine name.  I then use a bucket suffix to identify the archive file.
+For example, if your domain is "foo.com" and your machine is named "jack" and you are backing up your "/var/www" directory
+then I would name my bucket "com.foo.jack:/var/www.tgz".   The reason for the reverse order of the domain "com.foo.jack" is to emulate the java package naming
+structure.  In the world of Java, packages are named in this way.  
+I aslo make use of the JS3tream -t parameter to add a usefull description of this archive.  Soemthing like "Archive of /var/www".
+</p>
+<hr>
+
+<a name="2">
+<h2>Why do I get an OutOfMemory error when I try to retore from S3?</h2>
+</a>
+<p>
+The one downside to using Java, is it can demand a few more Megs of Ram than a native compiled program.  This might make it sounds
+as though Java is a memory pig, but it really isn't.  I've found that JS3tream loads into about 49M of ram for upload operations,
+and about 39M of ram for download operations.  If your system is not allowing your JVM to allocate this much memory, then you
+might try increasing the amount available to Java with the -Xmx option.   The default for most JVMs is 80M.  The following
+will increate the maximum ram used to 128 Megabytes.
+</p>
+<pre class="code">java -Xmx128M -jar js3tream.jar</pre>
+<p>
+The -z option has a big impact on the amount of ram needed by JS3tream.  The default value for the -z option is 5000000 bytes, or 5M.
+This means that JS3tream will need atleast 5M of memory just for the internal buffer.  If you try to set the -z option to a 
+huge value like 300M, then you will most likely run out of memory.  If you really think you need 300M blocks, then you might also
+want to use the -f option.  This tells JS3tream to use a file buffer instead of a memory buffer.
+</p>
+
+<hr>
+
+<a name="3">
+<h2>What impact does setting the "size (-z)" flag in JS3tream have?</h2>
+<p>This is a very important question to understand.  This default value for -z is 5 Megabytes.  When JS3tream
+is creating a new or restoring S3 archive, it will create a temporary file in your temp directory.  As your
+program streams data into JS3tream, it will write the data to this temp file.  Once the temp file is full, 
+JS3tream will send this chunck to S3.  Once the send is complete, the temp file will be emptied, and your stream
+of data will continue ot fill it once again.  Then, JS3tream will send that next chunk.. and so on.. and so on.
+</p>
+<p>The same happens when restoring a file from S3.  A temp file is used and filled with the chunk of stream data.
+Once the chunk of data is read from S3, the temp file will have it's MD5 sum checked to ensure the transfer was 
+successfull. Then, the data will be streamed out through STDOUT.
+</p>
+<p>You can see how this can impact the operation.  If you set the size option to 3 Gigabytes, then JS3tream
+will try to create a 3G file on your system.  If that is successfull, JS3tream will try to send that 3G file to S3.
+Although this should work, what if the upload fails?  Then JS3tream will try again, and you can see how much of a waste
+of bandwidth this can be.
+</p><p>Also, if you set the size to way too small, like 20 bytes, then you'll be sending 20 byte chunks to your S3 bucket.  If
+your stream of data is 10 megabytes in size, your going to make a heck of alot of bucket objects for no good reason.
+</a>
+
+<hr>
+
+<a name="4">
+<h2>How does JS3tream verify the data was uploaded successfully?</h2>
+<p>
+Another reason that jS3tram creates a temporary file for uploading chunks of data, is to it can calculate the MD5 sum of each
+chunk sent.  Once a data chunk is uploaded to S3, S3 will return the MD5 sum that they calculated.  If the MD5 sums match, then
+JS3tream assumes that the upload was a success.  If the MD5 sums don't match, then JS3tream will try once again to upload the 
+chunk.
+</p>
+</a>
+
+<hr>
+
+<a name="5">
+<h2>How many times will JS3tream try to send the same data chunk?</h2>
+<p>
+JS3tream will try 5 times to send a data chunk.  If all 5 attempts fail, then the operation will end.
+</p>
+</a>
+
+<hr>
+
+<a name="6">
+<h2>How long will it take to upload/download my data?</h2>
+<p>
+This depends on the speed of your internet pipe.  My internet connection at home is through one of the major TV Companies.  I get 
+about 3.5 megabits download speed, and about 300 kilobits upload speed.  If you want to test your internet speed, try
+this bandwidth tester. <a href="http://www.wugnet.com/myspeed/speedtest.asp">Bandwidth Speed Test</a>.
+</p>
+<p>This means at 300kbps, a 10 megabyte file will take about 4.5 minutes to upload, and about 35 seconds to download. Try the -v option on js3tream to see
+what upload speed is being achieved.</p>
+</a>
+
+<hr>
+
+<a name="7">
+<h2>If JS3tream reads and writes from STDIO, then won't the -v option mess up my data?</h2>
+<p>
+No.  All output generated by JS3tream that is intended for the user to read is sent through STDERR.  Your STDIN and STDOUT streams
+are NOT altered in anyway.
+</p>
+</a>
+
+<hr>
+
+<a name="8">
+<h2>How can I encrypt my data on S3?</h2>
+<p>
+I'm afraid that JS3tream doesn't support encrypting of data.. yet.  It might one day.  But in the mean time, it is up to you
+to encrypt your data before sending it through JS3tream.  You can use the gpg tool provided in most Linux falvors.
+</p>
+</a>
+
+<hr>
+
+<a name="9">
+<h2>What is the maximum size I can store per archive?</h2>
+<p>
+This is one of those "Depends" answers.  Amazon allows each object within a single bucket to be a maximum of 5 gigabytes insize.  JS3tream names 
+the bucket objects with a key based on a 64-bit long value.  There for the maximum number of objects per bucket is 2<sup>63</sup>-1.  Thats
+9,223,372,036,854,775,807 chunks of data per bucket.  So, in theory, 9,223,372,036,854,775,807 x 5 gigs gives us a maximum of 46,116,860,184,273,879,035 Gigabytes
+of storage per archive.  I don't think there is even that much data on this entire planet!
+</p>
+<p>
+Since S3 can hold a theoretical HUGE amount of data, the limit for JS3tream is actually on the maximum size of the single temp file needed during
+an archive operation.  JS3tream creates a temp file based on the size of the data chunks passed to S3.  The default is 5 megabytes.  If your system only
+allows the temp file to be.. say... 100 megabytes, then that is the size limit of each data chunk.
+</p>
+<p>
+The quick answer to this question... LOTS AND LOTS!!
+</p>
+</a>
+
+<hr>
+
+<a name="10">
+<h2>How can I get my S3 archive and save it as a file?</h2>
+<p>
+Since JS3tream is just a STDIO bridge, you can run JS3tream with the -o option and redirect STDOUT to a file.  Try this
+</p>
+<pre class="code">
+java -jar js3tream.jar -K key.txt -o -b mybucket.backup:archive.tgz > myarchive.tgz
+</pre>
+<p>
+This will read the stream data from S3, and put the data into the myarchive.tgz file.
+</p>
+</a>
+
+<hr>
+
+<a name="11">
+<h2>Why does JS3tream need to use a temp file?</h2>
+<p>
+The first release of JS3tream used temp files for all S3 data chunks sent out.  Now using temp files is an option in JS3tream.  By default
+we now use in memory buffers.  But, if you plan to send very large data chunks by setting the -z option, then you might want to 
+consider using file buffers with the -f option.
+</p>
+<p>
+But, why did JS3tream use file buffers to start with?
+Some of you Java programmers out there are wondering why JS3tream uses a temp file to buffer an S3 Object before sending it to Amazon.
+Why doesn't JS3tream just send the data directly as the stream is read?  Well, there are 2 answers to this question.  #1, when sending 
+a chunk of data to Amazon, they expect you to specify the chuck size before actually sending the data. So, we need to know the chuck size
+ahead of time.  Therefor a temp file gives us this ability.  #2, we use MD5 sums in both send and receive operations to ensure that the
+data chuck is not corrupted.  And if the data is corrupted, JS3tream will attempt to re-fetch or re-seand the chunk of data.  Again, a temp
+file is by far the best way to do this.
+</p>
+</a>
+
+<hr>
+
+<a name="12">
+<h2>Why does it take so long to list the contents of my S3 bucket?</h2>
+<p>When listing the contents of a particular S3 bucket, JS3tream does more than just list the archives within the bucket.   
+For each archive within a single S3 bucket, JS3tream will also calculate the number of data chunks, and the sizes of these 
+data chunks.  This means that for a given
+S3 bucket, each and every data chunk within the bucket must have it's metadata read so we can get the size info.  
+For this reason, JS3tream must 
+therefor atleast look at every element with the specified bucket. And this is where the time starts to add up.  If you have a 100 gigabyte
+archive broken up into 5M chunks, this will result in 20000 data chunks for this archive alone.  Now, JS3tream has to look at each of the 20,000
+elements one at a time. 
+</p>
+<p>
+But don't worry, listing the contents of a bucket does NOT require that the data be downloaded.  JS3tream only reads the buckets meta-data to 
+determine file sizes.
+</p>
+</a>
+
+<a name="13">
+<h2>How can I restore my archive without using JS3tream?</h2>
+</a>
+<p>
+One of the things I made sure if when writing JS3tream, was that it's uploaded data was not in a format that was
+readable ONLY by JS3tream.  If you understand how JS3tream stores your data to S3, then you can very easily restore
+your data using a number of different options.
+</p>
+<p>
+JS3tream stores your archive data in what I call "data chunks".  And each data chunk is identified by both an archive prefix 
+and an index number.  Using any number of utilities available, you can view the contents of one of your buckets.  
+What you will see, is a bucket with a list of containers that look like this.
+</p>
+<pre class="code">
+home-movies.zip:00000000000000000000
+home-movies.zip:00000000000000000001
+home-movies.zip:00000000000000000002
+home-movies.zip:00000000000000000003
+home-movies.zip:00000000000000000005
+...
+home-movies.zip:00000000000000000264
+home-movies.zip:00000000000000000265
+home-movies.zip:00000000000000000266
+</pre>
+<p>
+You could use the --list and --debug option of JS3tream to also view these data chunks.
+</p>
+<p>
+What you see in the above container list, is the "data chunks" JS3tream has created.  Note, they are named with the "prefix" you used to
+create the archive, and then an index number is automatically generated to identify the correct order of the data.
+</p>
+<p>
+Again, using any number of available S3 utilities, you can download from S3, each individual container into seperate files on your computer.
+For example, you could grab the above list into files named "home-movies.0" "home-movies.1" "home-movies.2" etc.. etc...
+</p>
+<p>
+Once downloaded, you can re-construct your original file by combining them all togeher.
+</p>
+<pre class="code">
+  # On Windows
+  type home-movies.0 home-movies.1 home-movie.2 ... home-movies.266 > home-movies.zip
+
+  # On Unix/Linux
+  cat home-movies.0 home-movies.1 home-movies.2 ... home-movies.266 > home-movies.zip
+</pre>
+<p>
+Thats it, you now have a copy of your original archive file, and you didn't need JS3tream to do it.
+</p>
+
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-2916410-1";
+urchinTracker();
+</script>
+
+  </body>
+
+</html>
