@@ -45,57 +45,82 @@ public class Command
 	
 	private static final int MAJOR_VERSION = 0;
 	private static final int MINOR_VERSION = 6;
-	private static final String DATE_VERSION = "December 17, 2007";
+	private static final int BUILD_VERSION = 2;
+	private static final String DATE_VERSION = "December 19, 2007";
 	private static final String LICENSE = "Protected under the LGPL";
 	private static final String COPYRIGHT = "Copyright (c) Shane Powell 2007";
 	private static final String WEBSITE = "http://js3tream.sourceforge.net";
 	
-	private static final String VERSION = "JS3tream v" + MAJOR_VERSION + "." + MINOR_VERSION + " - " + DATE_VERSION + "\n" + LICENSE + "\n" + COPYRIGHT + "\n" + WEBSITE;
+	private static final String VERSION = "JS3tream v" + MAJOR_VERSION + "." + MINOR_VERSION + "." + BUILD_VERSION + " - " + DATE_VERSION + "\n" + LICENSE + "\n" + COPYRIGHT + "\n" + WEBSITE;
 	
 	
 	private static final String USAGE =
-		VERSION + "\n" +
 		"\nUsage:\n" +
-			"[-K,--keyfile] <file> - A key/secret properties file. This is the preferred method.\n" +
-			"\tThe property file must have 2 entries each on it's own line\n" +
-			"\t\tkey=<your key id>\n" +
-			"\t\tsecret=<your s3 secret>\n" + 
+			"[-K,--keyfile] <file> - A key/secret properties file. This is the preferred\n" +
+			"    method.  The property file must have 2 entries each on it's own line\n" +
+			"        key=<your key id>\n" +
+			"        secret=<your s3 secret>\n" +
+			"\n" +
 			"[-k,--key] <key> - The Amazon S3 Key ID.  Not needed with -K option.\n" +
-			"[-s,--secret] <secret> - The Amazon S3 Secret Key.  It is not a good idea to use \n" +
-			"\tthis option Because someone can do a 'ps' on your system, and see the full command\n" +
-			"\tline, including your Secret and key.  Use the -K method instead.\n" +
-			"[-b,--bucket] <bucket><:prefix> - The Amazon S3 bucket.  This is what we refer to as\n" +
-			"\tan S3 Archive.  You can also specify an optional object prefix with the \":\"\n" +
-			"\tcharacter. This allows a single bucket to hold multiple streams of data.  For\n" +
-			"\texample \"bucket-1234:A\" puts all the data into bucket \"bucket-1234\" and prefixes\n" +
-			"\teach data block with \"A\".  You can then put another stream into \"bucket-1234:B\"\n" +
-			"\tand they will not impact each other.\n" +
+			"\n" +
+			"[-s,--secret] <secret> - The Amazon S3 Secret Key.  It is not a good idea\n" +
+			"    to use this option Because someone can do a 'ps' on your system, and see\n" +
+			"    the full command line, including your Secret and key.\n" +
+			"    Use the -K method instead.\n" +
+			"\n" +
+			"[-b,--bucket] <bucket><:prefix> - The Amazon S3 bucket.  This is what we\n" +
+			"    refer to as an S3 Archive.  You can also specify an optional object\n" +
+			"    prefix with the \":\" character. This allows a single bucket to hold\n" +
+			"    multiple streams of data.  For example \"bucket-1234:A\" puts all the\n" +
+			"    data into bucket \"bucket-1234\" and prefixes each data block with \"A\".\n" +
+			"    You can then put another stream into \"bucket-1234:B\" and they will\n" +
+			"    not impact each other.\n" +
+			"\n" +
 			"[-i,--in] Read the STDIN stream, and send it to S3.\n" +
+			"\n" +
 			"[-o,--out] - Read the data from S3, and pipe it to STDOUT\n" +
-			"[-l,--list] - List the archives on S3. This is basically the list of S3 buckets.  If\n" +
-			"\tyou provide a bucket name, it it will list the contents of the bucket\n" +
-			"[-d,--delete] - Delete the S3 archive.  If you specified a prefix, then only the data\n" +
-			"\tassociated with that bucket:prefix combo is deleted.  If you did not specify a prefix\n" +
-			"\tthen ALL bucket data, and the bucket itself will be deleted\n" +
-			"[-t,--tag] - Add a description tag to the s3 stream.  This will be displayed with\n" +
-			"\tthe -l option.\n" +
-			"[-p,--pretend] - Pretend to perform the requested action and output what would have\n" +
-			"\thappened to stderr.  Implies -v option.\n" +
-			"[-f,--file] - Buffer all stream data into temp file rather than memory.  This is\n" +
-			"\taffected by the -z option.  Use this when you want to send very large stream parts.\n" +
-			"[-z,--size] - Specify the size in bytes that the stream will be broken into inside the\n" +
-			"\tbucket. Default is 5000000 This can impact memory requirements on your system, as a\n" +
-			"\tbuffer if this size is created in memroy or on file based on the -f option.  This is\n" +
-			"\tonly used when sending data to S3 with the -i option.\n" +
-			"[-n,--neverdie] - Specify this option to tell JS3tream to NEVER giveup try to send data\n" +
-			"\tto S3.  The default is to make 5 attempts, then quit.  But, if this happens, then we must\n" +
-			"\trestart the entire operation.  However, specify the -n option, and JS3tream will trying to\n" +
-			"\tcomplete the operation, unless broken by the user.  After 5 failed attempts in a row,\n" +
-			"\t JS3tream will wait 30 minutes, and start another 5 retries.  This will repeat forever.\n" +
-			"[-v,--verbose] - Output Verbose activity messages to stderr.  This has no impact on your\n" +
-			"\t stdin or sdtout streams\n" +
+			"\n" +
+			"[-l,--list] - List the archives on S3. This is basically the list of S3\n" +
+			"    buckets.  If you provide a bucket name, it it will list the contents of\n" +
+			"    the bucket\n" +
+			"\n" +
+			"[-d,--delete] - Delete the S3 archive.  If you specified a prefix, then only\n" +
+			"    the data associated with that bucket:prefix combo is deleted.  If you\n" +
+			"    did not specify a prefix then ALL bucket data, and the bucket itself\n" +
+			"    will be deleted\n" +
+			"\n" +
+			"[-t,--tag] - Add a description tag to the s3 stream.  This will be displayed\n" +
+			"    with the -l option.\n" +
+			"\n" +
+			"[-p,--pretend] - Pretend to perform the requested action and output what\n" +
+			"    would have happened to stderr.  Implies -v option.\n" +
+			"\n" +
+			"[-f,--file] - Buffer all stream data into temp file rather than memory.\n" +
+			"    This is affected by the -z option.  Use this when you want to send\n" +
+			"    very large stream parts.\n" +
+			"\n" +
+			"[-z,--size] - Specify the size in bytes that the stream will be broken into\n" +
+			"    inside the bucket. Default is 5000000 This can impact memory requirements\n" +
+			"    on your system, as a buffer if this size is created in memroy or on file\n" +
+			"    based on the -f option.  This is only used when sending data to S3 with\n" +
+			"    the -i option.\n" +
+			"\n" +
+			"[-n,--neverdie] - Specify this option to tell JS3tream to NEVER giveup try\n" +
+			"    to send data to S3.  The default is to make 5 attempts, then quit.\n" +
+			"    But, if this happens, then we must restart the entire operation.\n" +
+			"    However, specify the -n option, and JS3tream will trying to complete the\n" +
+			"    operation, unless broken by the user.  After 5 failed attempts in a row,\n" +
+			"    JS3tream will wait 30 minutes, and start another 5 retries.  This will\n" +
+			"    repeat forever.\n" +
+			"\n" +
+			"[-v,--verbose] - Output Verbose activity messages to stderr.\n" +
+			"    This has no impact on your stdin or sdtout streams\n" +
+			"\n" +
 			"[-V, --version] - Output the JS3tream version.\n" +
-			"[--debug] - Turn on Debugging output.  This will result in more detailed status messages.\n" +
+			"\n" +
+			"[--debug] - Turn on Debugging output.  This will result in more detailed\n" +
+			"    status messages.\n" +
+			"\n" +
 			"[-h,--help] - Print this usage.\n\n";
 
 	/********************************************************
@@ -103,9 +128,13 @@ public class Command
 	 *******************************************************/
 	private static void printUsage(String extraMessage)
 	{
+		Log.error("\n" + VERSION + "\n");
+		
 		if (extraMessage != null)
 		{
-			Log.error(extraMessage + "\n\n");
+			Log.error("\n>>> " + extraMessage + " <<<\n");
+			Log.error("  Use the -h switch to get help. ");
+			return;
 		}
 		
 		Log.error(USAGE);
