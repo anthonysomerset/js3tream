@@ -104,11 +104,11 @@
 
 		<property name="fjepPath" value="${libDir}/fatjar.jar"/>
 		<taskdef name="fatjar.build" classname="net.sf.fjep.anttask.FJBuildTask" classpath="${fjepPath}"/>
-		<typedef name="fatjar.manifest" classname="net.sf.fjep.anttask.FJManifestType" classpath="${fjepPath}"/>
+		<typedef name="fatjar.manifest" classname="net.sf.fjep.anttask.FJManifestType" classpath="${fjepPath}"/> 
 		<typedef name="fatjar.exclude" classname="net.sf.fjep.anttask.FJExcludeType" classpath="${fjepPath}"/>
 		<typedef name="fatjar.jarsource" classname="net.sf.fjep.anttask.FJJarSourceType" classpath="${fjepPath}"/>
 		<typedef name="fatjar.filesource" classname="net.sf.fjep.anttask.FJFileSourceType" classpath="${fjepPath}"/>
-
+		
 		<fatjar.build onejar="true" output="js3tream.jar">
 			<fatjar.manifest mainclass="net.sourceforge.js3tream.Command"/>
 			<fatjar.jarsource file="${libDir}/js3tream.jar" relpath=""/>
