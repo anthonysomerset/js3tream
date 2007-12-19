@@ -1,18 +1,25 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
 <html>
   <head>
-	<title>General JS3tream howto</title>
+	<title>General JS3tream How To</title>
 	<link rel="stylesheet" type="text/css" href="main.css" />
   </head>
 
   <body bgcolor="white">
 
-<table border="0">
-  <tr height="210"><td><a href="/"><img border="0" src="logo.gif"></a></td></tr>
+
+<table height="210" border="0">
+  <tr height="30"></tr>
+  <tr height="1">
+    <td valign="top"><a href="/"><img border="0" src="logo.gif"></a></td>
+  </tr>
+  <tr>
+    <td valign="top" align="center"><font name="Arial" size="+2">A bridge between your data, and infiniate storage</font></td>
+  </tr>
 </table>
 
-
-    <h1>General JS3tream howto</h1>
+    <h1>General JS3tream How To</h1>
 
 <ul>
   <li><a href="#keyfile">How to create and use a key.txt file</a></li>
@@ -29,8 +36,8 @@
 <hr>
 <a name="keyfile"><h2>How to create and use a key.txt file</h2></a>
 <p>It is possible to provide your Amazon S3 ID and Key on the command line with the -k and -s options. But this is not 
-a good idea.  On Unix systems, people will be able to fiew the running command line with the "ps" command, and see both
-your ID and key.  Not very secure.  By using the -K key.txt option, you can make things alog more secure.  Now, looking
+a good idea.  On Unix systems, people will be able to few the running command line with the "ps" command, and see both
+your ID and key.  Not very secure.  By using the -K key.txt option, you can make things a lot more secure.  Now, looking
 at the "ps" output, you'll only see the reference to a file.  You can now set the file permissions of your key.txt 
 file such that only people that should be able to read the file will have access.
 </p>
@@ -71,7 +78,7 @@ So.. It's going to be in your best interest to put archives into a bucket design
 <pre class="code">
   java -jar js3tream.jar --keyfile key.txt --list --bucket MyArchiveBucket
 </pre>
-<p>The resluting output will reseble this</p>
+<p>The resulting output will resemble this</p>
 <pre class="code">
 2007-12-01 01:03:45 - MyArchiveBucket:mymusic.tgz - 20.31M in 1 data blocks
 2007-11-15 01:03:46 - MyArchiveBucket:moremusic.zip - 19.67M in 1 data blocks
@@ -82,13 +89,13 @@ So.. It's going to be in your best interest to put archives into a bucket design
 2007-03-06 09:44:19 - MyArchiveBucket:2006-taxes.pdf - 2585.29k in 1 data blocks
 </pre>
 <p>
-The output shows alot of info about each archive within the bucket.
+The output shows a lot of info about each archive within the bucket.
 <ul>
   <li>The data and time the archive was created.</li>
   <li>The name of the bucket "MyArchiveBucket".</li>
   <li>The optional archive prefix "mymusic.tgz" or "myresume.doc".</li>
   <li>The estimated size of the archive "20.31M" or "19.05k".</li>
-  <li>The number of datablocks that make up the specific archive</li>
+  <li>The number of data blocks that make up the specific archive</li>
 </ul>
 </p>
 
@@ -101,7 +108,7 @@ sends it in manageable chunks.  If you want to send 100M of data, and with the -
 use 10M chunks, then your archive will be made up of 100/10 data chunks.
 </p>
 <p>
-This is not something that most peple will want to do, sine the resulting output is really just usefull for developers. 
+This is not something that most people will want to do, sine the resulting output is really just useful for developers. 
 All you need to do is identify the specific archive to inspect, and then provide the "--debug" option.
 </p>
 <pre class="code">
@@ -126,7 +133,7 @@ Don't be alarmed that your archive claims to have 267 data blocks, but the last 
 
 <hr>
 <a name="delete_archive"><h2>How to delete an archive</h2></a>
-<p>We've backed up a new copy of our music archive.  Now, it time to delete the old one because we don't want to keep 2 copies.  Or perhaps you do?  Thats your call.  But, in order to delete an archive, we use the -d option.  Note, it is critical that you provide the prefix name of the archive with the ":" in the bucket name.  Without the prefix, JS3tream will attempt to delete the bucket itself.  But don't worry, JS3tream can't delete a non-empty bucket.
+<p>We've backed up a new copy of our music archive.  Now, it time to delete the old one because we don't want to keep 2 copies.  Or perhaps you do?  That is your call.  But, in order to delete an archive, we use the -d option.  Note, it is critical that you provide the prefix name of the archive with the ":" in the bucket name.  Without the prefix, JS3tream will attempt to delete the bucket itself.  But don't worry, JS3tream can't delete a non-empty bucket.
 </p>
 <pre class="code">
  java -jar js3tream.jar --keyfile key.txt --delete --bucket MyArchiveBucket:mymusic.tgz
@@ -150,7 +157,7 @@ It is missing the ":" and prefix in the bucket name.
 <a name="size"><h2>How to specify the data chunk size</h2></a>
 <p>
 The default for JS3tream is to send data to S3 in 5M chunks.  For most people, this default will be just fine.  Afterall, the number
-of data chunks a single bucket can hold is rather huge.  Infact it's 2<sup>63</sup>-1.  Thats alot of data chunks.  Multiply that by 5M
+of data chunks a single bucket can hold is rather huge.  Infact it's 2<sup>63</sup>-1.  Thats a lot of data chunks.  Multiply that by 5M
 and we have a number too big for me to calculate in my head.  But.. Lets just say you want to specify the size of the data chunks. 
 This is where the -z option comes into play.  simply provide a number "in bytes" you want the chunks to be.
 </p>
@@ -178,10 +185,10 @@ NOTE however, this option slows jS3tream down quite a bit.  temp files are no wh
 <hr>
 <a name="neverdie"><h2>How to use the "neverdie" option</h2></a>
 <p>
-If your like me, you might have setup a cron job to backup your data on a regular basis.  The "neverdie" option is going to save you some hastles.  JS3tream will automatically attempt to re-send a data chunk that fails to upload.  But, by default, JS3tream will give up trying to send the data after a specific number of tries.  This is a major problem for very large archives.  What if you had gotten to the 184th data chunk, of about 210 data chunks, and JS3tream fails for a simple temporary network problem.  Now you have to start the upload at the start again! No good.
+If your like me, you might have setup a cron job to backup your data on a regular basis.  The "neverdie" option is going to save you some hassles.  JS3tream will automatically attempt to re-send a data chunk that fails to upload.  But, by default, JS3tream will give up trying to send the data after a specific number of tries.  This is a major problem for very large archives.  What if you had gotten to the 184th data chunk, of about 210 data chunks, and JS3tream fails for a simple temporary network problem.  Now you have to start the upload at the start again! No good.
 </p>
 <p>
-The "neverdie" option tells JS3tream to keep on trying to send your data FOREVER!  If a data chunk upload fails, JS3tream will keep on tryin
+The "neverdie" option tells JS3tream to keep on trying to send your data FOREVER!  If a data chunk upload fails, JS3tream will keep on trying
 until either you stop it, or the upload finishes.  Now, temporary internet problems will not mess up your archive process.
 </p>
 

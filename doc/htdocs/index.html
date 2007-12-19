@@ -1,4 +1,4 @@
-
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
     <title>JS3tream - A stdio pipe between you and Amazaons S3 web service</title>
@@ -7,8 +7,15 @@
 
   <body>
 
-<table border="0">
-  <tr height="210"><td><a href="/"><img border="0" src="logo.gif"></a></td></tr>
+<table height="210" border="0" width="100%">
+  <tr height="30"></tr>
+  <tr height="1">
+    <td valign="top"><a href="/"><img border="0" src="logo.gif"></a></td>
+  </tr>
+  <tr width="100%">
+    <td valign="top" align="left"><font name="Arial" size="+2">A bridge between your data, and infiniate storage</font></td>
+    <td valign="top" align="right"><font name="Arial" size="+1">Written by Shane Powell</font></td>
+  </tr>
 </table>
 
   <h1>JS3tream - Easily stream files to and from Amazons S3 Web Service Storage</h1>
@@ -22,6 +29,7 @@
     <li><a href="#features">Features</a></li>
     <li><a href="#download">Download</a></li>
     <li><a href="#howto">How To...</a></li>
+    <li><a href="#license">License</a></li>
     <li><a href="#changelog">Change Log</a></li>
     <li><a href="#gethelp">Help/FAQ</a></li>
   </ul>
@@ -35,21 +43,21 @@
 </font>
 <p>
 The -n "never die" bug described below has been fixed, and tested.  I spent just about a month testing the
-backup and restore of a 29G tgz file.  The upload process was 100% successfull, and the download and un-tar
-was also 100% successfull.  So, we can all go back to useing JS3tream with confidence.
+backup and restore of a 29G tgz file.  The upload process was 100% successful, and the download and un-tar
+was also 100% successful.  So, we can all go back to using JS3tream with confidence.
 </p>
 <p>
-Also, a bug when retreiving data from s3 was fixed.  Some people were missing the last handfull of bytes of their downloaded
-file.  It took way too long for me to track this one down, but I finally did.  The retreival process seems to be working now.
+Also, a bug when retrieving data from s3 was fixed.  Some people were missing the last hand full of bytes of their downloaded
+file.  It took way too long for me to track this one down, but I finally did.  The retrieval process seems to be working now.
 </p>
 
   <h3>November 22 2007, v0.4 seems to have a serious bug.</h3>
 <p>
 It appears that the -n "never die" feature is not working with Js3tream.  I thought I had just fixed a bug
-related to the "never die" feature, but it looks like I managed to introduce a new one istead.  The bug I 
+related to the "never die" feature, but it looks like I managed to introduce a new one instead.  The bug I 
 I had fixed was that when Js3tream failed to upload a pack of data, it waited for 30 minutes, then tried again.
 However, it was NOT retrying the pack of data that failed.  Instead it moved to the next one.  Oops..
-Well.. That bug was fixed.  However, now for somereason, when JS3team goes into this "never die" sequence. It
+Well.. That bug was fixed.  However, now for some reason, when JS3team goes into this "never die" sequence. It
 never seems to manage to successfully upload the pack of data. It tries for ever, but seems to fail for ever too?
 I'm working hard on this bug right now, as it's caused my backups to stop working.
 </p>
@@ -61,7 +69,7 @@ I'm working hard on this bug right now, as it's caused my backups to stop workin
 <p>
 JS3tream was written to provide easy streaming of data to and from Amazons S3 data storage service.
 JS3tream is NOT a backup solution by itself.  But, coupled with tar or zip, JS3tream provides a very 
-powerfull backup solution.
+powerful backup solution.
 </p>
   
 
@@ -76,17 +84,17 @@ We all know we need to do it!  But Where, How, and How much?  That is the hard p
 </p>
 
 <p>
-How about a simple 250G external USB Hard Drive?  Thats actually not a bad idea at all.  It's large enough to hold my important data.
+How about a simple 250G external USB Hard Drive?  That is actually not a bad idea at all.  It's large enough to hold my important data.
 It's not too expensive to purchase. And it's hooked directly to my machine, so it's pretty fast.  But... What if a Burglar breaks in, 
 and steals both my machine, and the external backup drive?  Or my 1 year old daughter decides that the computer looks thirsty, and 
-pours watter on everything?  Or worse yet, my house catches fire and I loose everything!!  Oh, and what size Drive is the best choice?
+pours water on everything?  Or worse yet, my house catches fire and I loose everything!!  Oh, and what size Drive is the best choice?
 Sure, you start with a nice cheap 200G, because you only need 20G for backups.  But, what are the odds that you'll find more and more
 data to backup?  That 200G is going to fill up in a hurry?  Especially if your going to do Incremental Backups! 
 </p>
 
 <p>
-Ok then... Lets take that external USB hard drive to a friends house or work, and backup my files over a seacure SSH connection to another machine?
-Hmmm.. thats not a bad idea either.  Sure, the internet connection isn't as fast, but it will eventually backup everything.  But, now I have to 
+Ok then... Lets take that external USB hard drive to a friends house or work, and backup my files over a secure SSH connection to another machine?
+Hmmm.. that is not a bad idea either.  Sure, the internet connection isn't as fast, but it will eventually backup everything.  But, now I have to 
 contend with SSH connections to another machine, that is most likely behind a firewall.  That means opening up port 22 and exposing a possible
 security hole.  This will work, but it's not trivial
 </p>
@@ -97,26 +105,26 @@ How about a DLT or a DAT Tape drive?  One easy answer to that one. Expensive!  Y
 
 <p>
 Hey.. what about one of the many Offsite Internet based backup providers?  There are quite a few of them, and they support Linux!!
-#1 major proglem with this solution... $$$$$.  These guys want a lot of money for a small amount of storage.  The average cost I found
-was about $1 per Gigabyte per Month.  Thats not a tone of money, but a bit more than I want to pay for a personaly backup.  Then there is
+#1 major problem with this solution... $$$$$.  These guys want a lot of money for a small amount of storage.  The average cost I found
+was about $1 per Gigabyte per Month.  That is not a ton of money, but a bit more than I want to pay for a personal backup.  Then there is
 <a href="http://carbonite.com/">Carbonite</a>.  Not only are they cheap at a flat rate of $5 per month, but they have unlimited capacity too! 
 But.. alas.. they don't support Linux/Unix.
 </p>
 
 <p>
-In steps Amazon and their <a href="http://www.amazon.com/S3-AWS-home-page-Money/b/ref=sc_fe_l_2/105-6372934-8252429?ie=UTF8&node=16427261&no=3435361&me=A36L942TSJ2AJA">S3 web service</a>.  
-It's a simple offsite data storage solution with almost limitless capacity and a very reasonlble price.  But why is this better than that USB drive at a friends house?  
+In comes Amazon and their <a href="http://www.amazon.com/S3-AWS-home-page-Money/b/ref=sc_fe_l_2/105-6372934-8252429?ie=UTF8&node=16427261&no=3435361&me=A36L942TSJ2AJA">S3 web service</a>.  
+It's a simple offsite data storage solution with almost unlimited capacity and a very reasonable price.  But why is this better than that USB drive at a friends house?  
 Price per Gigabyte and ease of use.  There are no firewalls to contend with. 15c per G of storage is quite cheap if you ask me.  And, you don't have to wonder if
 there is enough room to store your data!
 </p>
 
 <p>
-Ok.. Amazons S3 it is, but... how?  I need to backup my data and maintain the original file metadata, like the GID, UID, timestamp and unask.
-Alot like the tried and true "TAR" utility does.  
+Ok.. Amazons S3 it is, but... how?  I need to backup my data and maintain the original file metadata, like the GID, UID, timestamp and umask.
+A lot like the tried and true "TAR" utility does.  
 There are a couple of freeware utilities to choose from that will allow you to upload files to S3. 
 There is <a href="https://jets3t.dev.java.net/">Jets3t</a>. But it doesn't support UIDs or GIDs or Filemasks in a Unix/Linux environment.  
 There is the very good <a href="http://developer.amazonwebservices.com/connect/thread.jspa?threadID=10116&tstart=0">s3sync</a> utility. But I found that when 
-I used it, I could not reliably get all of my data uploaded without it hanging.  Perhaps 15G was too much?  So.. now what?
+I used it, I could not reliably get all of my data uploaded without it hanging. I never figured out why.  Perhaps 15G was too much? Pehaps it was something far simpler.  So.. now what?  (see the next section)
 </p>
 
 
@@ -127,8 +135,8 @@ I used it, I could not reliably get all of my data uploaded without it hanging. 
 
 <p>
 Why re-invent the wheel?  TAR, ZIP and RAR have been archiving files for years.  And they do it very well.  TAR was designed from the start for backups on a unix system.
-So lets leverage the power of TAR.  But how do I make TAR store it's archives on S3?  With JS3tream ofcourse?  Think of JS3tream as a bridge between Amazons S3
-and your backup software.  JS3tream will read STDOUT from your tar utility, and storge the stream on S3.  Then, JS3tream can read the stream back from S3, and
+So lets leverage the power of TAR.  But how do I make TAR store it's archives on S3?  With JS3tream of course?  Think of JS3tream as a bridge between Amazons S3
+and your backup software.  JS3tream will read STDOUT from your tar utility, and store the stream on S3.  Then, JS3tream can read the stream back from S3, and
 pipe it to tar on STDIN.  Voila... Reliable TAR archives to a reliable offsite data store!
 </p>
 
@@ -167,9 +175,9 @@ storing raw data.  This is why JS3tream is so simple to use.
 
 <p>
 When streaming data to S3 through JS3tream, JS3tream will take your data, break it up into manageable chunks, and store each chunk into a single
-S3 object within the S3 Bucket you named.  Within the Amazon S3 bucket, there will be a serice of S3 Objetcs named 0000000000 -> 999999999999. 
+S3 object within the S3 Bucket you named.  Within the Amazon S3 bucket, there will be a service of S3 Objects named 0000000000 -> 999999999999. 
 Each of these objects represents a chunk of your streamed data.  If you did not have access to JS3tream, you could actually download
-each object one at a time, and concat them together to rebuild your originla stream manualy.  For this reason, JS3tream is quite flexable, because
+each object one at a time, and concat them together to rebuild your original stream manually.  For this reason, JS3tream is quite flexible, because
 if for what ever reason, JS3tream is failing you on your restore, you can still get your original data.
 </p>
 
@@ -187,16 +195,17 @@ each chunk to STDOUT.
 <li>100% Java and thus cross platform</li>
 <li>Consists of just one file "js3tream.jar"</li>
 <li>Easy command line options for setting up in a cron job</li>
-<li>Performs atleast 2 tries per stream part to ensure clean uploads</li>
+<li>Performs at least 2 tries per stream part to ensure clean uploads</li>
 <li>Checks MD5 sums at both ends and both directions to ensure good data transfers</li>
 <li>Multiple data streams can be stored in a single S3 bucket</li>
-<li>-neverdie option tells JS3tream to never giveup trying to send/receive data</li>
+<li>-neverdie option tells JS3tream to never give up trying to send/receive data</li>
 <li>Store multiple archives in a single S3 bucket by using archive prefixes</li>
 <li>Use either in memory or temp files for stream buffers.  Memory for speed, temp files for larger S3 data chunks</li>
 </ul>
 <br><br>
 <h2>Possible Future Changes</h2>
 <ul>
+<li>Bandwidth throttle</li>
 <li>Double upload temp buffers for better upload speed.
 <li>GUI Front end</li>
 </ul>
@@ -207,17 +216,23 @@ each chunk to STDOUT.
   <a name="download"><h2>Download</h2></a>
 
   <p>
-  <a href="http://sourceforge.net/project/showfiles.php?group_id=185270">Download from the main Sourceforge site</a><br>
-  To install, simply unzip or untar the downloaded file to a directory.  Then, from the command line and within the installed directory
-run "java -jar js3tream.jar".
-Look at the Howto section for more ussage examples
+  <a href="http://sourceforge.net/project/showfiles.php?group_id=185270">Download from the main Sourceforge site</a>
+  <br>
+  To install, simply unzip or untar the downloaded file to a directory.<br>
+   Then, from the command line and within the installed directory the following to see how to use JS3tream.
+</p>
+<pre class="code">java -jar js3tream.jar -h</pre>
+<p>
+Look at the <a href="#howto">How To</a> section for more usage examples.
+</p>
   </p>
 
   <br><hr>
   
-  <a name="howto"><h2>Howto</h2></a>
+  <a name="howto"><h2>How To</h2></a>
   
     <ul>
+      <li><a href="usage.html">Command Line Options</a></li>
       <li><a href="js3tream_howto.html">General JS3tream HowTo</a></li>
       <li><a href="linux_tar.html">Backup using tar and JS3tream in Linux</a></li>
       <li><a href="windows_zip.html">Backup using ZIP and JS3tream in Windows</a></li>
@@ -225,36 +240,41 @@ Look at the Howto section for more ussage examples
       <li><a href="windows_tar.html">Backup using tar and JS3tream in Windows</a></li>
     </ul>
 
+  <hr>
+  <a name="license"><h2>License</h2></a>
+<p>
+JS3tream is licensed under the <a href="http://www.gnu.org/licenses/lgpl-3.0.txt">GNU LESSER GENERAL PUBLIC LICENSE</a>.  I'm a big fan of free software, and hope this gives some back to the OpenSource community.   In short, your free to use JS3tream for pretty much anything you want.  But you can't charge any money to other people for JS3tream, or use JS3tream in any commercial programs.
+</p>
 
   <br><hr>
 
   <a name="changelog"><h2>Change Log</h2></a>
   
 <ul>
-<li>12/19/2007 - v0.6.2 of JS3tream released</li>
+<li><strong>12/19/2007 - v0.6.2 of JS3tream released</strong></li>
   <ul>
     <li>This release provides a trivial reformatting fix for the help output.  It was not well formatted on the default Windows
         command prompt.  There are no functionality differences between this release and v0.6</li>
   </ul>
-<li>12/17/2007 - v0.6 of JS3tream released</li>
+<li><strong>12/17/2007 - v0.6 of JS3tream released</strong></li>
   <ul>
     <li>This release fixed a serious bug in v0.4 of JS3tream.  The "neverdie" out of sequence bug.  It turned out that when the
 	neverdie "-n" option was, some of the uploaded buckets lost their correct sequence number.  That is, when an upload
 	failed, and JS3tream attempted to wait 30 minutes and continue the upload, it would try again on the failed data, but
 	the containers index number was incremented when it should not have been.</li>
-    <li>Another bug fixed was an odd one I had trouble tracking down.  Some people were experiencing a problem when retreiving
+    <li>Another bug fixed was an odd one I had trouble tracking down.  Some people were experiencing a problem when retrieving
 	a bucket from S3.  The downloaded file was missing a few bytes at the end of the file.  Between 50 and 200 or so bytes
-	were not retreived.  This bug has also been fixed and tested now</li>
+	were not retrieved.  This bug has also been fixed and tested now</li>
   </ul>
-<li>11/17/207 - v0.5 of JS3tream was not released.  This was an internal build</li>
-<li>10/26/2006 - v0.4 of JS3tream released</li>
+<li><strong>11/17/207 - v0.5 of JS3tream was not released.  This was an internal build</strong></li>
+<li><strong>10/26/2006 - v0.4 of JS3tream released</strong></li>
   <ul>
     <li>This is a bug fix release.  There was a problem with the sending and receiving of data containers
 	when the "neverdie" option is used.  It turned out that after the 30 minute wait to retry the failed
 	container, JS3tream was NOT resending the failed container, but instead moving to the next.
 	This has now been fixed.
   </ul>
-<li>01/05/2007 - Beta v0.2 of JS3tream released</li>
+<li><strong>01/05/2007 - Beta v0.2 of JS3tream released</strong></li>
   <ul>
     <li>Support for multiple archive streams in a single S3 bucket</li>
     <li>JS3tream built using <a href="http://fjep.sourceforge.net/">FatJar</a> thus providing a single executable jar.</li>
@@ -262,9 +282,9 @@ Look at the Howto section for more ussage examples
     <li>A new -neverdie option tells JS3tream to never giveup trying to send or receive data.</li>
     <li>The new prefix option is backward compatible with v0.1 and it's lack of a prefix.</li>
   </ul>
-<li>12/29/2006 - Beta v0.1 of JS3tream released</li>
-<li>12/28/2006 - Earliy testing is done, time to setup the JS3tream Sourceforge web site.</li>
-<li>12/14/2006 - Started trying to backup my server to Amazon S3 using other tools, and failed.  So, I started writing JS3tream.</li>
+<li><strong>12/29/2006 - Beta v0.1 of JS3tream released</strong></li>
+<li><strong>12/28/2006 - Earliy testing is done, time to setup the JS3tream Sourceforge web site.</strong></li>
+<li><strong>12/14/2006 - Started trying to backup my server to Amazon S3 using other tools, and failed.  So, I started writing JS3tream.</strong></li>
     </ul>
   
 

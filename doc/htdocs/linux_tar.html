@@ -1,3 +1,5 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
 
 <html>
 
@@ -8,16 +10,22 @@
 
   <body bgcolor="white">
 
-<table border="0">
-  <tr height="210"><td><a href="/"><img border="0" src="logo.gif"></a></td></tr>
-</table>
 
+<table height="210" border="0">
+  <tr height="30"></tr>
+  <tr height="1">
+    <td valign="top"><a href="/"><img border="0" src="logo.gif"></a></td>
+  </tr>
+  <tr>
+    <td valign="top" align="center"><font name="Arial" size="+2">A bridge between your data, and infiniate storage</font></td>
+  </tr>
+</table>
 
 <h1>Backup using tar and JS3tream in Linux</h1>
 <p>
 Thankfully for us, the GNU Tar utility provides an easy way to pipe data in and out.  I'm sure most of you remember the old way
 of using gunzip piped into tar to extract a .tgz file.  That being said, these examples here are using the now common gnu tar 
-utility that comes with most (if not all) Linux distributions.  Infact, I was using GNU Tar 1.16 when I tested these commands.
+utility that comes with most (if not all) Linux distributions.  In fact, I was using GNU Tar 1.16 when I tested these commands.
 </p>
 <br><hr>
 <h2>Common TAR switches</h2>
@@ -45,7 +53,7 @@ utility that comes with most (if not all) Linux distributions.  Infact, I was us
 <br><hr>
 <h2>Backup a Directory to S3</h2>
 <p>
-Using tar, create a ziped backup of "/etc" and pipe the tared data through JS3tream storing the data into bucket "mybucket" prefix "etc.tgz".  
+Using tar, create a zipped backup of "/etc" and pipe the tared data through JS3tream storing the data into bucket "mybucket" prefix "etc.tgz".  
 </p>
 <pre class="code">
 tar -C / -czpO /etc | java -jar js3tream.jar -K mykey.txt -b mybucket:etc.tgz -i -t "An archive of my /etc directory"
@@ -123,14 +131,14 @@ java -jar js3tream -K mykey.txt -l -b mybucket
 2006-12-21 02:15:12 - mybucket:etc.0.tgz
     TAG: The initial archive of /etc
 2006-12-21 04:16:57 - mybucket:etc.1.tgz
-   -> An incremental archivew of /etc
+   -> An incremental archive of /etc
 2006-12-21 07:12:12 - mybucket:etc.2.tgz
-   -> An incremental archivew of /etc
+   -> An incremental archive of /etc
 2006-12-21 07:25:21 - mybucket:etc.3.tgz
-   -> An incremental archivew of /etc
+   -> An incremental archive of /etc
 </pre>
 <p>
-Now we know the names of our archives.  We will need to perform 4 restores to be uptodate.  Note the difference in the tar -g option.  This tells tar to perform a
+Now we know the names of our archives.  We will need to perform 4 restores to be up to date.  Note the difference in the tar -g option.  This tells tar to perform a
 differential restore, but no dif file is provided on restore operations.
 <pre class="code">
   java -jar js3tream.jar -K mykey.txt -o -b mybucket:etc.0.tgz | tar -g /dev/null -C / -xz
@@ -149,6 +157,77 @@ The following command will tar up the /etc directory on a remote machine, pull t
 <pre class="code">
   ssh remote_machine tar -czpO /etc | java -jar js3tream.jar -K key.txt -i -b mys3bucket:etc.0.tgz -t "Initial archive of /etc" -v
 </pre>
+
+<hr>
+<h2>Automate the backup of your files</h2>
+<p>
+With the help of cron, and a very simple shell script, I've automated the backup of my data to s3.  Cron is used to start the backup process, and the
+shell script does all the work. 
+</p>
+<p>
+Here is a link to the <a href="http://js3tream.svn.sourceforge.net/viewvc/*checkout*/js3tream/js3tream/doc/scripts/s3backup.sh?content-type=text%2Fplain">s3backup.sh</a> script I'm using.
+</p>
+<p>
+combined with the following lines in my crontab
+</p>
+<pre class="code">
+# Backup the spool directory every 1st and 15th
+00 01 01 * * cd /root/bin; ./s3backup.sh  NORMAL /var/spool js3tream.MyArchiveBucket:/var/spool-A-FULL.tgz
+00 01 15 * * cd /root/bin; ./s3backup.sh  NORMAL /var/spool js3tream.MyArchiveBucket:/var/spool-B-FULL.tgz
+
+# Backup the /etc directory every 1st and 15th
+03 01 01 * * cd /root/bin; ./s3backup.sh  NORMAL /etc js3tream.MyArchiveBucket:/etc-A-FULL.tgz
+03 01 15 * * cd /root/bin; ./s3backup.sh  NORMAL /etc js3tream.MyArchiveBucket:/etc-B-FULL.tgz
+
+# Incrementally backup the www directory, starting with a full in January, and incremental every 1st and 15th
+00 03 01 01 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  FULL /var/www js3tream.MyArchiveBucket:/var/www-A-01-FULL.tgz /root/bin/diff/var-www.tgz.diff
+00 03 15 01 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-A-02-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 01 02 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-A-03-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 15 02 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-A-04-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 01 03 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-A-05-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 15 03 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-A-06-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 01 04 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-A-07-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 15 04 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-A-08-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 01 05 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-A-09-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 15 05 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-A-10-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 01 06 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-A-11-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 15 06 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-A-12-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+
+# Incrementally backup the www diretory under a new title.  Almost the same as above.
+00 03 01 07 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  FULL /var/www js3tream.MyArchiveBucket:/var/www-B-01-FULL.tgz /root/bin/diff/var-www.tgz.diff
+00 03 15 07 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-B-02-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 01 08 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-B-03-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 15 08 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-B-04-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 01 09 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-B-05-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 15 09 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-B-06-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 01 10 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-B-07-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 15 10 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-B-08-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 01 11 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-B-09-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 15 11 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-B-10-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 01 12 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-B-11-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+00 03 15 12 * cd /root/bin; ./sqldump.sh; ./s3backup.sh  DIFF /var/www js3tream.MyArchiveBucket:/var/www-B-12-DIFF.tgz /root/bin/diff/var-www.tgz.diff
+
+</pre>
+<p>
+  The s3backup.sh script takes 3 or 4 parameters.<br>
+  The command you see named "sqldump.sh" is a very very basic script that dumps my postgres and mysql databases each to a backup.sql file.  These
+  get placed in my /var/www directory, and thus backed up with it.
+</p>
+<pre class="code">
+  s3backup.sh "type" "directory" "bucket:prefix" "diff-file"
+  
+  type = The type of backup.  NORMAL, FULL or DIFF
+            FULL - Does a full backup of the directory, and creates a TAR incremental DIFF file for the following differential backups.
+            DIFF - Does an incremental backup of the directory, using the provided diff file.
+            NORMAL does a complete non-incremental backup of the directory to S3.
+
+  directory = The directory to archive.
+
+  bucket:prefix = the bucket name and the prefix passed to js3tream.  See the -b option in js3tream for details.
+
+  diff-file = the tar differential file used.  This is the file that TAR needs to perform incremental backups.
+</pre>
+
 
 <script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
 </script>

@@ -1,3 +1,5 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
 
 <html>
   <head>
@@ -7,10 +9,16 @@
 
   <body bgcolor="white">
 
-<table border="0">
-  <tr height="210"><td><a href="/"><img border="0" src="logo.gif"></a></td></tr>
-</table>
 
+<table height="210" border="0">
+  <tr height="30"></tr>
+  <tr height="1">
+    <td valign="top"><a href="/"><img border="0" src="logo.gif"></a></td>
+  </tr>
+  <tr>
+    <td valign="top" align="center"><font name="Arial" size="+2">A bridge between your data, and infiniate storage</font></td>
+  </tr>
+</table>
 
 <h1>JS3tream FAQ</h1>
 
@@ -45,7 +53,7 @@ I have been using a naming structure that incorporates my domain and machine nam
 For example, if your domain is "foo.com" and your machine is named "jack" and you are backing up your "/var/www" directory
 then I would name my bucket "com.foo.jack:/var/www.tgz".   The reason for the reverse order of the domain "com.foo.jack" is to emulate the java package naming
 structure.  In the world of Java, packages are named in this way.  
-I aslo make use of the JS3tream -t parameter to add a usefull description of this archive.  Soemthing like "Archive of /var/www".
+I also make use of the JS3tream -t parameter to add a usefull description of this archive.  Something like "Archive of /var/www".
 </p>
 <hr>
 
@@ -62,7 +70,7 @@ will increate the maximum ram used to 128 Megabytes.
 <pre class="code">java -Xmx128M -jar js3tream.jar</pre>
 <p>
 The -z option has a big impact on the amount of ram needed by JS3tream.  The default value for the -z option is 5000000 bytes, or 5M.
-This means that JS3tream will need atleast 5M of memory just for the internal buffer.  If you try to set the -z option to a 
+This means that JS3tream will need at least 5M of memory just for the internal buffer.  If you try to set the -z option to a 
 huge value like 300M, then you will most likely run out of memory.  If you really think you need 300M blocks, then you might also
 want to use the -f option.  This tells JS3tream to use a file buffer instead of a memory buffer.
 </p>
@@ -74,7 +82,7 @@ want to use the -f option.  This tells JS3tream to use a file buffer instead of 
 <p>This is a very important question to understand.  This default value for -z is 5 Megabytes.  When JS3tream
 is creating a new or restoring S3 archive, it will create a temporary file in your temp directory.  As your
 program streams data into JS3tream, it will write the data to this temp file.  Once the temp file is full, 
-JS3tream will send this chunck to S3.  Once the send is complete, the temp file will be emptied, and your stream
+JS3tream will send this chunk to S3.  Once the send is complete, the temp file will be emptied, and your stream
 of data will continue ot fill it once again.  Then, JS3tream will send that next chunk.. and so on.. and so on.
 </p>
 <p>The same happens when restoring a file from S3.  A temp file is used and filled with the chunk of stream data.
@@ -86,7 +94,7 @@ will try to create a 3G file on your system.  If that is successfull, JS3tream w
 Although this should work, what if the upload fails?  Then JS3tream will try again, and you can see how much of a waste
 of bandwidth this can be.
 </p><p>Also, if you set the size to way too small, like 20 bytes, then you'll be sending 20 byte chunks to your S3 bucket.  If
-your stream of data is 10 megabytes in size, your going to make a heck of alot of bucket objects for no good reason.
+your stream of data is 10 megabytes in size, your going to make a heck of a lot of bucket objects for no good reason.
 </a>
 
 <hr>
@@ -139,7 +147,7 @@ are NOT altered in anyway.
 <h2>How can I encrypt my data on S3?</h2>
 <p>
 I'm afraid that JS3tream doesn't support encrypting of data.. yet.  It might one day.  But in the mean time, it is up to you
-to encrypt your data before sending it through JS3tream.  You can use the gpg tool provided in most Linux falvors.
+to encrypt your data before sending it through JS3tream.  You can use the gpg tool provided in most Linux flavors.
 </p>
 </a>
 
@@ -148,8 +156,8 @@ to encrypt your data before sending it through JS3tream.  You can use the gpg to
 <a name="9">
 <h2>What is the maximum size I can store per archive?</h2>
 <p>
-This is one of those "Depends" answers.  Amazon allows each object within a single bucket to be a maximum of 5 gigabytes insize.  JS3tream names 
-the bucket objects with a key based on a 64-bit long value.  There for the maximum number of objects per bucket is 2<sup>63</sup>-1.  Thats
+This is one of those "Depends" answers.  Amazon allows each object within a single bucket to be a maximum of 5 gigabytes in size.  JS3tream names 
+the bucket objects with a key based on a 64-bit long value.  There for the maximum number of objects per bucket is 2<sup>63</sup>-1.  That is
 9,223,372,036,854,775,807 chunks of data per bucket.  So, in theory, 9,223,372,036,854,775,807 x 5 gigs gives us a maximum of 46,116,860,184,273,879,035 Gigabytes
 of storage per archive.  I don't think there is even that much data on this entire planet!
 </p>
@@ -193,7 +201,7 @@ Some of you Java programmers out there are wondering why JS3tream uses a temp fi
 Why doesn't JS3tream just send the data directly as the stream is read?  Well, there are 2 answers to this question.  #1, when sending 
 a chunk of data to Amazon, they expect you to specify the chuck size before actually sending the data. So, we need to know the chuck size
 ahead of time.  Therefor a temp file gives us this ability.  #2, we use MD5 sums in both send and receive operations to ensure that the
-data chuck is not corrupted.  And if the data is corrupted, JS3tream will attempt to re-fetch or re-seand the chunk of data.  Again, a temp
+data chuck is not corrupted.  And if the data is corrupted, JS3tream will attempt to re-fetch or re-send the chunk of data.  Again, a temp
 file is by far the best way to do this.
 </p>
 </a>
@@ -207,7 +215,7 @@ For each archive within a single S3 bucket, JS3tream will also calculate the num
 data chunks.  This means that for a given
 S3 bucket, each and every data chunk within the bucket must have it's metadata read so we can get the size info.  
 For this reason, JS3tream must 
-therefor atleast look at every element with the specified bucket. And this is where the time starts to add up.  If you have a 100 gigabyte
+therefor at least look at every element with the specified bucket. And this is where the time starts to add up.  If you have a 100 gigabyte
 archive broken up into 5M chunks, this will result in 20000 data chunks for this archive alone.  Now, JS3tream has to look at each of the 20,000
 elements one at a time. 
 </p>
@@ -253,7 +261,7 @@ Again, using any number of available S3 utilities, you can download from S3, eac
 For example, you could grab the above list into files named "home-movies.0" "home-movies.1" "home-movies.2" etc.. etc...
 </p>
 <p>
-Once downloaded, you can re-construct your original file by combining them all togeher.
+Once downloaded, you can re-construct your original file by combining them all together.
 </p>
 <pre class="code">
   # On Windows
