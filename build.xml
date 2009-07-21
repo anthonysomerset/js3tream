@@ -53,6 +53,7 @@
 			deprecation="true" 
 			debug="true" 
 			debuglevel="source,lines,vars"
+			target="1.5"
 		/>
 	</target>
 	
