@@ -341,17 +341,26 @@ public class Command
 			/* Start it up.  We'll watch for any 307 Temporary redirects.  If we get one, we'll override the 
 			 * default AXIS endpoint, and try again. */
 			boolean redirectDetected = false;
+			int redirectCount = 0;
 			
 			/* As long as a redirect is detected, keep trying */
-			while (redirectDetected)
+			do
 			{
+				redirectCount++;
+				redirectDetected = false;
+				
+				if (redirectCount >= 10)
+				{
+					throw new Exception("10 or more redirects were detected.  This seems very much out of place.  Exiting.");
+				}
+				
 				try
 				{ 
-					redirectDetected = false;
 					op.start();
 				}
 				catch(AxisFault af)
 				{
+					Log.debug("Received AxisFault:", af);
 					URL redirectUrl = extractRedirectURL(af);
 					if (redirectUrl == null)
 					{
@@ -359,6 +368,7 @@ public class Command
 					}
 					else
 					{
+						Log.debug("Attempting to connect to redirected endpoint: " + redirectUrl);
 						/* A redirect was found.  Set the redirect flag, and override the s3 port for the op */
 						redirectDetected = true;
 						op.createS3Port(redirectUrl);
@@ -366,7 +376,8 @@ public class Command
 					}
 				}
 				
-			} /* end while */
+			}
+			while(redirectDetected); 
 						
 		}
 		catch(Exception e)
@@ -389,16 +400,19 @@ public class Command
 	{
 		URL redir = null;
 		
+		Log.debug("Looking for " + S3_TEMP_REDIRECT + " message [" + af.getFaultCode().getLocalPart() + "]");
+		
 		/* Look for the S3 redirect string in the local part */
 		if (S3_TEMP_REDIRECT.equals(af.getFaultCode().getLocalPart()))
 		{
+
 			/* Step through the list of details, looking for the endpoint element */
 			for (int index = 0; index < af.getFaultDetails().length; index++)
 			{
 				Element e = af.getFaultDetails()[index];
 				if (S3_TEMP_REDIRECT_ENDPOINT.equalsIgnoreCase(e.getNodeName()))
 				{
-					System.out.println("Checking [" + e + "] / [" + e.getNodeName() + "][" + e.getNodeValue() + "][" + e.getNodeType() + "][" + e.getTextContent() + "]");
+					Log.debug("Checking [" + e + "] / [" + e.getNodeName() + "][" + e.getNodeValue() + "][" + e.getNodeType() + "][" + e.getTextContent() + "]");
 					String redirectUrl = e.getNodeValue();
 					redir = new URL("https://" + redirectUrl);
 				}
