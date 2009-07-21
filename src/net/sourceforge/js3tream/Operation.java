@@ -25,6 +25,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 package net.sourceforge.js3tream;
 
 
+import java.net.URL;
+
 import com.amazonaws.s3.doc._2006_03_01.AmazonS3_PortType;
 import com.amazonaws.s3.doc._2006_03_01.AmazonS3_ServiceLocator;
 
@@ -165,6 +167,12 @@ public abstract class Operation
 	
 	
 	/********************************************************
+	 * This method will return the currently cached port that
+	 * was created either by this method, or by createS3Port(URL).
+	 * IF the port was created,this method will ALWAYS return 
+	 * the currently created on.  If you wish to force a new 
+	 * port to be created for things like a 307 redirect, call
+	 * the createS3Port(URL)
 	 * @return
 	 *******************************************************/
 	public AmazonS3_PortType getS3Port() throws Exception
@@ -174,6 +182,20 @@ public abstract class Operation
 			this.s3Port_ = new AmazonS3_ServiceLocator().getAmazonS3();
 		}
 		
+		return this.s3Port_;
+	}
+	
+	
+	/********************************************************
+	 * Unlike the above getS3port() this method will ALWAYS
+	 * cause the creation of a new port object.  If you call this
+	 * method once, you can call getS3Port() in the future
+	 * to obtain the already created port.
+	 * @return
+	 *******************************************************/
+	public AmazonS3_PortType createS3Port(URL endpoint) throws Exception
+	{
+		this.s3Port_ = new AmazonS3_ServiceLocator().getAmazonS3(endpoint);
 		return this.s3Port_;
 	}
 	

@@ -26,7 +26,12 @@ package net.sourceforge.js3tream;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.URL;
 import java.util.Properties;
+
+import org.apache.axis.AxisFault;
+import org.apache.axis.client.AxisClient;
+import org.w3c.dom.Element;
 
 import net.sourceforge.js3tream.util.Access;
 import net.sourceforge.js3tream.util.Log;
@@ -44,12 +49,15 @@ public class Command
 {
 	
 	private static final int MAJOR_VERSION = 0;
-	private static final int MINOR_VERSION = 6;
-	private static final int BUILD_VERSION = 2;
-	private static final String DATE_VERSION = "December 19, 2007";
+	private static final int MINOR_VERSION = 7;
+	private static final int BUILD_VERSION = 0;
+	private static final String DATE_VERSION = "July 21, 2009";
 	private static final String LICENSE = "Protected under the LGPL";
-	private static final String COPYRIGHT = "Copyright (c) Shane Powell 2007";
+	private static final String COPYRIGHT = "Copyright (c) Shane Powell 2009";
 	private static final String WEBSITE = "http://js3tream.sourceforge.net";
+	
+	private static final String S3_TEMP_REDIRECT = "Client.TemporaryRedirect";
+	private static final String S3_TEMP_REDIRECT_ENDPOINT = "Endpoint";
 	
 	private static final String VERSION = "JS3tream v" + MAJOR_VERSION + "." + MINOR_VERSION + "." + BUILD_VERSION + " - " + DATE_VERSION + "\n" + LICENSE + "\n" + COPYRIGHT + "\n" + WEBSITE;
 	
@@ -133,7 +141,7 @@ public class Command
 		if (extraMessage != null)
 		{
 			Log.error("\n>>> " + extraMessage + " <<<\n");
-			Log.error("  Use the -h switch to get help. ");
+			Log.error("  Use the -h switch to get help.\n");
 			return;
 		}
 		
@@ -330,8 +338,35 @@ public class Command
 				throw new Exception("Woh.. this can't happen.  We don't know what command to run.");
 			}
 			
-			/* Start it up */
-			op.start();
+			/* Start it up.  We'll watch for any 307 Temporary redirects.  If we get one, we'll override the 
+			 * default AXIS endpoint, and try again. */
+			boolean redirectDetected = false;
+			
+			/* As long as a redirect is detected, keep trying */
+			while (redirectDetected)
+			{
+				try
+				{ 
+					redirectDetected = false;
+					op.start();
+				}
+				catch(AxisFault af)
+				{
+					URL redirectUrl = extractRedirectURL(af);
+					if (redirectUrl == null)
+					{
+						throw new Exception(af);
+					}
+					else
+					{
+						/* A redirect was found.  Set the redirect flag, and override the s3 port for the op */
+						redirectDetected = true;
+						op.createS3Port(redirectUrl);
+						
+					}
+				}
+				
+			} /* end while */
 						
 		}
 		catch(Exception e)
@@ -340,9 +375,37 @@ public class Command
 			return;
 		}
 
+	}
+	
+	
+	/********************************************************
+	 *  If the provided AxisFault is infact a redirect fault,
+	 *  then extract the redirect URL and return it.  If 
+	 *  this is not a redirect fault, return null.
+	 * @param af
+	 * @return
+	 *******************************************************/
+	private static URL extractRedirectURL(AxisFault af) throws Exception
+	{
+		URL redir = null;
 		
-		
-		
+		/* Look for the S3 redirect string in the local part */
+		if (S3_TEMP_REDIRECT.equals(af.getFaultCode().getLocalPart()))
+		{
+			/* Step through the list of details, looking for the endpoint element */
+			for (int index = 0; index < af.getFaultDetails().length; index++)
+			{
+				Element e = af.getFaultDetails()[index];
+				if (S3_TEMP_REDIRECT_ENDPOINT.equalsIgnoreCase(e.getNodeName()))
+				{
+					System.out.println("Checking [" + e + "] / [" + e.getNodeName() + "][" + e.getNodeValue() + "][" + e.getNodeType() + "][" + e.getTextContent() + "]");
+					String redirectUrl = e.getNodeValue();
+					redir = new URL("https://" + redirectUrl);
+				}
+			}
+		}
+
+		return redir;
 	}
 	
 }
