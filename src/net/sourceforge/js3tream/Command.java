@@ -349,9 +349,9 @@ public class Command
 				redirectCount++;
 				redirectDetected = false;
 				
-				if (redirectCount >= 10)
+				if (redirectCount >= 4)
 				{
-					throw new Exception("10 or more redirects were detected.  This seems very much out of place.  Exiting.");
+					throw new Exception("4 or more redirects were detected.  This seems very much out of place.  Exiting.");
 				}
 				
 				try
@@ -361,17 +361,18 @@ public class Command
 				catch(AxisFault af)
 				{
 					Log.debug("Received AxisFault:", af);
-					URL redirectUrl = extractRedirectURL(af);
-					if (redirectUrl == null)
+					String redirectEndpoint = extractRedirectEndpoint(af);
+					if (redirectEndpoint == null)
 					{
 						throw new Exception(af);
 					}
 					else
 					{
-						Log.debug("Attempting to connect to redirected endpoint: " + redirectUrl);
+						redirectEndpoint = "https://" + redirectEndpoint;
 						/* A redirect was found.  Set the redirect flag, and override the s3 port for the op */
+						Log.debug("Attempting to connect to redirected endpoint: [" + redirectEndpoint + "]\n");
 						redirectDetected = true;
-						op.createS3Port(redirectUrl);
+						op.createS3Port(redirectEndpoint);
 						
 					}
 				}
@@ -396,14 +397,13 @@ public class Command
 	 * @param af
 	 * @return
 	 *******************************************************/
-	private static URL extractRedirectURL(AxisFault af) throws Exception
+	private static String extractRedirectEndpoint(AxisFault af) throws Exception
 	{
-		URL redir = null;
 		
 		Log.debug("Looking for " + S3_TEMP_REDIRECT + " message [" + af.getFaultCode().getLocalPart() + "]");
 		
 		/* Look for the S3 redirect string in the local part */
-		if (S3_TEMP_REDIRECT.equals(af.getFaultCode().getLocalPart()))
+		if (S3_TEMP_REDIRECT.equalsIgnoreCase(af.getFaultCode().getLocalPart()))
 		{
 
 			/* Step through the list of details, looking for the endpoint element */
@@ -412,14 +412,14 @@ public class Command
 				Element e = af.getFaultDetails()[index];
 				if (S3_TEMP_REDIRECT_ENDPOINT.equalsIgnoreCase(e.getNodeName()))
 				{
-					Log.debug("Checking [" + e + "] / [" + e.getNodeName() + "][" + e.getNodeValue() + "][" + e.getNodeType() + "][" + e.getTextContent() + "]");
-					String redirectUrl = e.getNodeValue();
-					redir = new URL("https://" + redirectUrl);
+					Log.debug("Checking [" + e + "] / [" + e.getNodeName() + "][" + e.getNodeValue() + "][" + e.getNodeType() + "][" + e.getTextContent() + "]\n");
+					String redirectUrl = e.getTextContent();
+					return redirectUrl;
 				}
 			}
 		}
 
-		return redir;
+		return null;
 	}
 	
 }
