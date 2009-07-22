@@ -193,9 +193,11 @@ public abstract class Operation
 	 * to obtain the already created port.
 	 * @return
 	 *******************************************************/
-	public AmazonS3_PortType createS3Port(URL endpoint) throws Exception
+	public AmazonS3_PortType createS3Port(String endpoint) throws Exception
 	{
-		this.s3Port_ = new AmazonS3_ServiceLocator().getAmazonS3(endpoint);
+		AmazonS3_ServiceLocator loc = new AmazonS3_ServiceLocator();
+		loc.setAmazonS3EndpointAddress(endpoint);
+		this.s3Port_ = loc.getAmazonS3();
 		return this.s3Port_;
 	}
 	
