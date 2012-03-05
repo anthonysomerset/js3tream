@@ -17,10 +17,10 @@ public class StorageClass implements java.io.Serializable {
         _table_.put(_value_,this);
     }
 
-    public static final java.lang.String _TEMP = "TEMP";
+    public static final java.lang.String _REDUCED_REDUNDANCY = "REDUCED_REDUNDANCY";
     public static final java.lang.String _STANDARD = "STANDARD";
     public static final java.lang.String _UNKNOWN = "UNKNOWN";
-    public static final StorageClass TEMP = new StorageClass(_TEMP);
+    public static final StorageClass REDUCED_REDUNDANCY = new StorageClass(_REDUCED_REDUNDANCY);
     public static final StorageClass STANDARD = new StorageClass(_STANDARD);
     public static final StorageClass UNKNOWN = new StorageClass(_UNKNOWN);
     public java.lang.String getValue() { return _value_;}

@@ -392,7 +392,7 @@ public class StdinOperation extends Operation
 		
 
 		MetadataEntry[] metaData = null;
-		StorageClass storageClass = StorageClass.STANDARD;
+		StorageClass storageClass = StorageClass.REDUCED_REDUNDANCY;
 		Access access = new Access();
 
 		/* Setup the optional meta data */
